@@ -4,6 +4,75 @@ info:
   version: 0.1.0
   description: Foundation API for the Gym Management SaaS.
 paths:
+  /api/admins/:
+    get:
+      operationId: admins_list
+      tags:
+      - admins
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/admins/{user_id}/permissions/:
+    put:
+      operationId: admin_permissions_set
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admins
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffPermissionSet'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffPermissionSet'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffPermissionSet'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/admins/{user_id}/permissions/{code}/:
+    delete:
+      operationId: admin_permissions_revoke
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admins
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/auth/redeem-invite/:
     post:
       operationId: auth_redeem_invite_create
@@ -154,8 +223,60 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenRefreshResponse'
           description: ''
+  /api/users/:
+    get:
+      operationId: users_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/users/{user_id}/deactivate/:
+    post:
+      operationId: users_deactivate_create
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+          description: ''
 components:
   schemas:
+    CodesEnum:
+      enum:
+      - manage_members
+      - manage_trainers
+      - manage_payments
+      - assign_trainers
+      - view_reports
+      type: string
+      description: |-
+        * `manage_members` - manage_members
+        * `manage_trainers` - manage_trainers
+        * `manage_payments` - manage_payments
+        * `assign_trainers` - assign_trainers
+        * `view_reports` - view_reports
     GymSummary:
       type: object
       properties:
@@ -170,7 +291,7 @@ components:
       type: object
       properties:
         role:
-          $ref: '#/components/schemas/RoleEnum'
+          $ref: '#/components/schemas/InviteCreateRoleEnum'
         phone:
           type: string
           maxLength: 32
@@ -181,6 +302,16 @@ components:
       - name
       - phone
       - role
+    InviteCreateRoleEnum:
+      enum:
+      - admin
+      - trainer
+      - member
+      type: string
+      description: |-
+        * `admin` - Admin
+        * `trainer` - Trainer
+        * `member` - Member
     InviteCreated:
       type: object
       properties:
@@ -294,16 +425,15 @@ components:
       - gym_id
       - role
       - user_id
-    RoleEnum:
-      enum:
-      - admin
-      - trainer
-      - member
-      type: string
-      description: |-
-        * `admin` - Admin
-        * `trainer` - Trainer
-        * `member` - Member
+    StaffPermissionSet:
+      type: object
+      properties:
+        codes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CodesEnum'
+      required:
+      - codes
     TokenPair:
       type: object
       properties:
@@ -333,6 +463,47 @@ components:
           type: string
       required:
       - access
+    UserList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        phone:
+          type: string
+          maxLength: 32
+        role:
+          $ref: '#/components/schemas/UserListRoleEnum'
+        gym:
+          type: integer
+          nullable: true
+        is_active:
+          type: boolean
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - date_joined
+      - id
+      - phone
+    UserListRoleEnum:
+      enum:
+      - super_admin
+      - owner
+      - admin
+      - trainer
+      - member
+      type: string
+      description: |-
+        * `super_admin` - Super admin
+        * `owner` - Owner
+        * `admin` - Admin
+        * `trainer` - Trainer
+        * `member` - Member
   securitySchemes:
     jwtAuth:
       type: http

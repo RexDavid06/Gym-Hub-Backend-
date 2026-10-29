@@ -12,7 +12,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from accounts.models import Invite, User
+from accounts.models import Invite, StaffPermission, User
+from accounts.permissions import IsOwner
 from accounts.serializers import (
     InviteCreatedSerializer,
     InviteCreateSerializer,
@@ -22,9 +23,12 @@ from accounts.serializers import (
     RedeemInviteSerializer,
     RegisteredGymSerializer,
     RegisterGymSerializer,
+    StaffPermissionSetSerializer,
     TokenPairSerializer,
     TokenRefreshResponseSerializer,
+    UserListSerializer,
 )
+from accounts.tenant import GymScopedModelViewSet
 from gyms.models import Gym
 
 
@@ -173,3 +177,107 @@ class RedeemInviteView(APIView):
             {"refresh": str(refresh), "access": str(refresh.access_token)},
             status=status.HTTP_200_OK,
         )
+
+
+class AdminListView(APIView):
+    permission_classes = [IsAuthenticated, IsOwner]
+
+    @extend_schema(responses=UserListSerializer(many=True))
+    def get(self, request):
+        admins = User.objects.filter(gym_id=request.user.gym_id, role=User.Role.ADMIN)
+        return Response(UserListSerializer(admins, many=True).data)
+
+
+def get_gym_admin_or_404(owner, user_id):
+    from django.shortcuts import get_object_or_404
+
+    return get_object_or_404(
+        User.objects.filter(gym_id=owner.gym_id, role=User.Role.ADMIN), pk=user_id
+    )
+
+
+class AdminPermissionsView(APIView):
+    permission_classes = [IsAuthenticated, IsOwner]
+    http_method_names = ["put", "options"]
+
+    @extend_schema(
+        operation_id="admin_permissions_set",
+        request=StaffPermissionSetSerializer,
+        responses=UserListSerializer,
+    )
+    def put(self, request, user_id):
+        admin = get_gym_admin_or_404(request.user, user_id)
+        serializer = StaffPermissionSetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        StaffPermission.objects.filter(user=admin).delete()
+        StaffPermission.objects.bulk_create(
+            [
+                StaffPermission(user=admin, code=code)
+                for code in set(serializer.validated_data["codes"])
+            ]
+        )
+        return Response(UserListSerializer(admin).data)
+
+    @extend_schema(operation_id="admin_permissions_revoke", request=None, responses=None)
+    def delete(self, request, user_id, code):
+        admin = get_gym_admin_or_404(request.user, user_id)
+        StaffPermission.objects.filter(user=admin, code=code).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AdminPermissionRevokeView(AdminPermissionsView):
+    http_method_names = ["delete", "options"]
+
+
+class DeactivateUserView(APIView):
+    permission_classes = [IsAuthenticated, IsOwner]
+
+    @extend_schema(request=None, responses=UserListSerializer)
+    def post(self, request, user_id):
+        from django.shortcuts import get_object_or_404
+
+        user = get_object_or_404(
+            User.objects.filter(gym_id=request.user.gym_id).exclude(role=User.Role.OWNER),
+            pk=user_id,
+        )
+        user.is_active = False
+        user.save(update_fields=["is_active"])
+        return Response(UserListSerializer(user).data)
+
+
+class UserListViewSet(GymScopedModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserListSerializer
+    http_method_names = ["get", "head", "options"]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+        if user.role == User.Role.OWNER:
+            pass
+        elif user.role == User.Role.ADMIN:
+            codes = set(user.staff_permissions.values_list("code", flat=True))
+            roles = []
+            if "manage_members" in codes:
+                roles.append(User.Role.MEMBER)
+            if "manage_trainers" in codes:
+                roles.append(User.Role.TRAINER)
+            if not roles:
+                return queryset.none()
+            queryset = queryset.filter(role__in=roles)
+        else:
+            return queryset.none()
+        role = self.request.query_params.get("role")
+        if role:
+            queryset = queryset.filter(role=role)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        if (
+            request.user.role != User.Role.OWNER
+            and not request.user.staff_permissions.filter(
+                code__in=["manage_members", "manage_trainers"]
+            ).exists()
+        ):
+            return Response({"detail": "You do not have permission to list users."}, status=403)
+        return super().list(request, *args, **kwargs)

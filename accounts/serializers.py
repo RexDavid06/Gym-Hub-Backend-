@@ -88,3 +88,28 @@ class RegisteredGymSerializer(serializers.Serializer):
 
 class RedeemInviteResponseSerializer(TokenPairSerializer):
     pass
+
+
+class UserListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "name", "phone", "role", "gym", "is_active", "date_joined"]
+
+
+ALLOWED_STAFF_PERMISSION_CODES = (
+    "manage_members",
+    "manage_trainers",
+    "manage_payments",
+    "assign_trainers",
+    "view_reports",
+)
+
+
+class StaffPermissionSerializer(serializers.Serializer):
+    code = serializers.ChoiceField(choices=ALLOWED_STAFF_PERMISSION_CODES)
+
+
+class StaffPermissionSetSerializer(serializers.Serializer):
+    codes = serializers.ListField(
+        child=serializers.ChoiceField(choices=ALLOWED_STAFF_PERMISSION_CODES), allow_empty=True
+    )
