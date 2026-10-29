@@ -2,12 +2,22 @@ from django.contrib import admin
 from django.urls import path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-from accounts.views import MeView, PhoneTokenObtainPairView, PhoneTokenRefreshView
+from accounts.views import (
+    InviteView,
+    MeView,
+    PhoneTokenObtainPairView,
+    PhoneTokenRefreshView,
+    RedeemInviteView,
+    RegisterGymView,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/token/", PhoneTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", PhoneTokenRefreshView.as_view(), name="token_refresh"),
+    path("api/auth/register-gym/", RegisterGymView.as_view(), name="register_gym"),
+    path("api/auth/redeem-invite/", RedeemInviteView.as_view(), name="redeem_invite"),
+    path("api/invites/", InviteView.as_view(), name="invite_create"),
     path("api/me/", MeView.as_view(), name="me"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),

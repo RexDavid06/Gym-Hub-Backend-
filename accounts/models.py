@@ -1,9 +1,13 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
+from django.utils import timezone
 
 from accounts.managers import UserManager
+from accounts.tenant import GymScopedManager
 from gyms.models import Branch, Gym
 
 
@@ -15,6 +19,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         TRAINER = "trainer", "Trainer"
         MEMBER = "member", "Member"
 
+    name = models.CharField(max_length=200, blank=True)
     phone = models.CharField(max_length=32, unique=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.MEMBER)
     gym = models.ForeignKey(
@@ -57,3 +62,31 @@ class StaffPermission(models.Model):
 
     def __str__(self):
         return f"{self.user}: {self.code}"
+
+
+def invite_expiry_default():
+    return timezone.now() + timedelta(days=7)
+
+
+class Invite(models.Model):
+    class Role(models.TextChoices):
+        ADMIN = "admin", "Admin"
+        TRAINER = "trainer", "Trainer"
+        MEMBER = "member", "Member"
+
+    gym = models.ForeignKey(Gym, on_delete=models.CASCADE, related_name="invites")
+    role = models.CharField(max_length=20, choices=Role.choices)
+    phone = models.CharField(max_length=32)
+    name = models.CharField(max_length=200)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="created_invites"
+    )
+    token_hash = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField(default=invite_expiry_default)
+    used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = GymScopedManager()
+
+    def __str__(self):
+        return f"{self.role} invite for {self.phone}"
