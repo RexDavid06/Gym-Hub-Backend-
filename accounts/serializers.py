@@ -1,7 +1,7 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from accounts.models import StaffPermission
+from accounts.models import Invite, StaffPermission, User
 
 
 class PhoneTokenSerializer(serializers.Serializer):
@@ -41,3 +41,75 @@ class MeSerializer(serializers.Serializer):
         if user.role == "owner":
             return list(StaffPermission.objects.filter(user=user).values_list("code", flat=True))
         return list(user.staff_permissions.values_list("code", flat=True))
+
+
+class RegisterGymSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=200)
+    phone = serializers.CharField(max_length=32)
+    password = serializers.CharField(write_only=True, trim_whitespace=False)
+    gym_name = serializers.CharField(max_length=200)
+
+    def validate_phone(self, value):
+        if User.objects.filter(phone=value).exists():
+            raise serializers.ValidationError("A user with this phone number already exists.")
+        return value
+
+
+class InviteCreateSerializer(serializers.Serializer):
+    role = serializers.ChoiceField(choices=Invite.Role.choices)
+    phone = serializers.CharField(max_length=32)
+    name = serializers.CharField(max_length=200)
+
+    def validate_phone(self, value):
+        if User.objects.filter(phone=value).exists():
+            raise serializers.ValidationError("A user with this phone number already exists.")
+        return value
+
+
+class InviteCreatedSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    role = serializers.CharField()
+    phone = serializers.CharField()
+    name = serializers.CharField()
+    expires_at = serializers.DateTimeField()
+    code = serializers.CharField()
+
+
+class RedeemInviteSerializer(serializers.Serializer):
+    code = serializers.CharField()
+    password = serializers.CharField(write_only=True, trim_whitespace=False)
+
+
+class RegisteredGymSerializer(serializers.Serializer):
+    gym_id = serializers.IntegerField()
+    user_id = serializers.IntegerField()
+    role = serializers.CharField()
+
+
+class RedeemInviteResponseSerializer(TokenPairSerializer):
+    pass
+
+
+class UserListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "name", "phone", "role", "gym", "is_active", "date_joined"]
+
+
+ALLOWED_STAFF_PERMISSION_CODES = (
+    "manage_members",
+    "manage_trainers",
+    "manage_payments",
+    "assign_trainers",
+    "view_reports",
+)
+
+
+class StaffPermissionSerializer(serializers.Serializer):
+    code = serializers.ChoiceField(choices=ALLOWED_STAFF_PERMISSION_CODES)
+
+
+class StaffPermissionSetSerializer(serializers.Serializer):
+    codes = serializers.ListField(
+        child=serializers.ChoiceField(choices=ALLOWED_STAFF_PERMISSION_CODES), allow_empty=True
+    )

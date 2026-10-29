@@ -1,0 +1,511 @@
+openapi: 3.0.3
+info:
+  title: Gym Management API
+  version: 0.1.0
+  description: Foundation API for the Gym Management SaaS.
+paths:
+  /api/admins/:
+    get:
+      operationId: admins_list
+      tags:
+      - admins
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/admins/{user_id}/permissions/:
+    put:
+      operationId: admin_permissions_set
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admins
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffPermissionSet'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffPermissionSet'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffPermissionSet'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/admins/{user_id}/permissions/{code}/:
+    delete:
+      operationId: admin_permissions_revoke
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admins
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/auth/redeem-invite/:
+    post:
+      operationId: auth_redeem_invite_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RedeemInvite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RedeemInvite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RedeemInvite'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedeemInviteResponse'
+          description: ''
+  /api/auth/register-gym/:
+    post:
+      operationId: auth_register_gym_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterGym'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterGym'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterGym'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisteredGym'
+          description: ''
+  /api/invites/:
+    post:
+      operationId: invites_create
+      tags:
+      - invites
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InviteCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InviteCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteCreated'
+          description: ''
+  /api/me/:
+    get:
+      operationId: me_retrieve
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+  /api/token/:
+    post:
+      operationId: token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PhoneToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PhoneToken'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+          description: ''
+  /api/token/refresh/:
+    post:
+      operationId: token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefreshResponse'
+          description: ''
+  /api/users/:
+    get:
+      operationId: users_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/users/{user_id}/deactivate/:
+    post:
+      operationId: users_deactivate_create
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+          description: ''
+components:
+  schemas:
+    CodesEnum:
+      enum:
+      - manage_members
+      - manage_trainers
+      - manage_payments
+      - assign_trainers
+      - view_reports
+      type: string
+      description: |-
+        * `manage_members` - manage_members
+        * `manage_trainers` - manage_trainers
+        * `manage_payments` - manage_payments
+        * `assign_trainers` - assign_trainers
+        * `view_reports` - view_reports
+    GymSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+      - id
+      - name
+    InviteCreate:
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/InviteCreateRoleEnum'
+        phone:
+          type: string
+          maxLength: 32
+        name:
+          type: string
+          maxLength: 200
+      required:
+      - name
+      - phone
+      - role
+    InviteCreateRoleEnum:
+      enum:
+      - admin
+      - trainer
+      - member
+      type: string
+      description: |-
+        * `admin` - Admin
+        * `trainer` - Trainer
+        * `member` - Member
+    InviteCreated:
+      type: object
+      properties:
+        id:
+          type: integer
+        role:
+          type: string
+        phone:
+          type: string
+        name:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        code:
+          type: string
+      required:
+      - code
+      - expires_at
+      - id
+      - name
+      - phone
+      - role
+    Me:
+      type: object
+      properties:
+        id:
+          type: integer
+        phone:
+          type: string
+        role:
+          type: string
+        gym:
+          allOf:
+          - $ref: '#/components/schemas/GymSummary'
+          nullable: true
+          readOnly: true
+        permission_codes:
+          type: array
+          items:
+            type: string
+          readOnly: true
+      required:
+      - gym
+      - id
+      - permission_codes
+      - phone
+      - role
+    PhoneToken:
+      type: object
+      properties:
+        phone:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - phone
+    RedeemInvite:
+      type: object
+      properties:
+        code:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - code
+      - password
+    RedeemInviteResponse:
+      type: object
+      properties:
+        refresh:
+          type: string
+        access:
+          type: string
+      required:
+      - access
+      - refresh
+    RegisterGym:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        phone:
+          type: string
+          maxLength: 32
+        password:
+          type: string
+          writeOnly: true
+        gym_name:
+          type: string
+          maxLength: 200
+      required:
+      - gym_name
+      - name
+      - password
+      - phone
+    RegisteredGym:
+      type: object
+      properties:
+        gym_id:
+          type: integer
+        user_id:
+          type: integer
+        role:
+          type: string
+      required:
+      - gym_id
+      - role
+      - user_id
+    StaffPermissionSet:
+      type: object
+      properties:
+        codes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CodesEnum'
+      required:
+      - codes
+    TokenPair:
+      type: object
+      properties:
+        refresh:
+          type: string
+        access:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    TokenRefreshResponse:
+      type: object
+      properties:
+        access:
+          type: string
+      required:
+      - access
+    UserList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        phone:
+          type: string
+          maxLength: 32
+        role:
+          $ref: '#/components/schemas/UserListRoleEnum'
+        gym:
+          type: integer
+          nullable: true
+        is_active:
+          type: boolean
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - date_joined
+      - id
+      - phone
+    UserListRoleEnum:
+      enum:
+      - super_admin
+      - owner
+      - admin
+      - trainer
+      - member
+      type: string
+      description: |-
+        * `super_admin` - Super admin
+        * `owner` - Owner
+        * `admin` - Admin
+        * `trainer` - Trainer
+        * `member` - Member
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
