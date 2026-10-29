@@ -97,3 +97,62 @@ def test_deactivated_user_cannot_log_in():
 
     assert response.status_code == 200
     assert login.status_code == 401
+
+
+def test_owner_cannot_change_permissions_or_deactivate_users_in_another_gym():
+    gym_a = Gym.objects.create(name="Gym A")
+    gym_b = Gym.objects.create(name="Gym B")
+    owner_a = make_user("+2348111000051", User.Role.OWNER, gym_a)
+    admin_b = make_user("+2348111000052", User.Role.ADMIN, gym_b)
+    member_b = make_user("+2348111000053", User.Role.MEMBER, gym_b)
+    client = client_for(owner_a)
+
+    set_permissions = client.put(
+        f"/api/admins/{admin_b.pk}/permissions/",
+        {"codes": ["manage_members"]},
+        format="json",
+    )
+    deactivate = client.post(f"/api/users/{member_b.pk}/deactivate/")
+
+    assert set_permissions.status_code == 404
+    assert deactivate.status_code == 404
+    assert not admin_b.staff_permissions.exists()
+    assert member_b.is_active
+
+
+def test_deactivation_rejects_existing_access_and_refresh_tokens():
+    gym = Gym.objects.create(name="Gym")
+    owner = make_user("+2348111000061", User.Role.OWNER, gym)
+    member = make_user("+2348111000062", User.Role.MEMBER, gym)
+    login = APIClient().post(
+        "/api/token/", {"phone": member.phone, "password": "password123"}, format="json"
+    )
+    access = login.data["access"]
+    refresh = login.data["refresh"]
+
+    assert client_for(owner).post(f"/api/users/{member.pk}/deactivate/").status_code == 200
+    me_client = APIClient()
+    me_client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
+    me_response = me_client.get("/api/me/")
+    refresh_response = APIClient().post("/api/token/refresh/", {"refresh": refresh}, format="json")
+
+    assert me_response.status_code == 401
+    assert refresh_response.status_code == 401
+
+
+def test_admin_gets_forbidden_on_owner_only_endpoints():
+    gym = Gym.objects.create(name="Gym")
+    admin = make_user("+2348111000071", User.Role.ADMIN, gym)
+    another_admin = make_user("+2348111000072", User.Role.ADMIN, gym)
+    client = client_for(admin)
+
+    assert client.get("/api/admins/").status_code == 403
+    assert (
+        client.put(
+            f"/api/admins/{another_admin.pk}/permissions/", {"codes": []}, format="json"
+        ).status_code
+        == 403
+    )
+    revoke = client.delete(f"/api/admins/{another_admin.pk}/permissions/manage_members/")
+    assert revoke.status_code == 403
+    assert client.post(f"/api/users/{another_admin.pk}/deactivate/").status_code == 403
