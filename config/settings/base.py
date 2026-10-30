@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "gyms",
     "accounts",
     "workouts",
+    "memberships",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

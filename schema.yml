@@ -198,6 +198,20 @@ paths:
                 items:
                   $ref: '#/components/schemas/UserList'
           description: ''
+  /api/me/membership/:
+    get:
+      operationId: me_membership_retrieve
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyMembership'
+          description: ''
   /api/me/trainer/:
     get:
       operationId: me_trainer_retrieve
@@ -278,6 +292,377 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/membership-payments/:
+    get:
+      operationId: membership_payments_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: query
+        name: member
+        schema:
+          type: integer
+      - in: query
+        name: subscription
+        schema:
+          type: integer
+      tags:
+      - membership-payments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MembershipPayment'
+          description: ''
+    post:
+      operationId: membership_payments_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - membership-payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipPayment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MembershipPayment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MembershipPayment'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPayment'
+          description: ''
+  /api/membership-payments/{id}/:
+    get:
+      operationId: membership_payments_retrieve
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - membership-payments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPayment'
+          description: ''
+  /api/membership-payments/{id}/void/:
+    post:
+      operationId: membership_payments_void_create
+      description: Void a payment. Payments are never edited or deleted.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - membership-payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoidPayment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VoidPayment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VoidPayment'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPayment'
+          description: ''
+  /api/membership-plans/:
+    get:
+      operationId: membership_plans_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - membership-plans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MembershipPlan'
+          description: ''
+    post:
+      operationId: membership_plans_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - membership-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MembershipPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MembershipPlan'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPlan'
+          description: ''
+  /api/membership-plans/{id}/:
+    get:
+      operationId: membership_plans_retrieve
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - membership-plans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPlan'
+          description: ''
+    put:
+      operationId: membership_plans_update
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - membership-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MembershipPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MembershipPlan'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPlan'
+          description: ''
+    patch:
+      operationId: membership_plans_partial_update
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - membership-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMembershipPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMembershipPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMembershipPlan'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPlan'
+          description: ''
+    delete:
+      operationId: membership_plans_destroy
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - membership-plans
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/memberships/:
+    get:
+      operationId: memberships_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: query
+        name: member
+        schema:
+          type: integer
+      tags:
+      - memberships
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MembershipSubscription'
+          description: ''
+    post:
+      operationId: memberships_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - memberships
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipSubscription'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MembershipSubscription'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MembershipSubscription'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipSubscription'
+          description: ''
+  /api/memberships/{id}/:
+    get:
+      operationId: memberships_retrieve
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - memberships
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipSubscription'
+          description: ''
+  /api/memberships/{id}/cancel/:
+    post:
+      operationId: memberships_cancel_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - memberships
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipSubscription'
+          description: ''
+  /api/memberships/{id}/renew/:
+    post:
+      operationId: memberships_renew_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - memberships
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenewMembership'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RenewMembership'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RenewMembership'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipSubscription'
+          description: ''
   /api/token/:
     post:
       operationId: token_create
@@ -685,6 +1070,239 @@ components:
       required:
       - member
       - trainer
+    MembershipPayment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        member:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          readOnly: true
+        member_id:
+          type: integer
+          writeOnly: true
+        subscription:
+          type: integer
+          readOnly: true
+        subscription_id:
+          type: integer
+          writeOnly: true
+          nullable: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        method:
+          $ref: '#/components/schemas/MethodEnum'
+        reference:
+          type: string
+          maxLength: 100
+        paid_at:
+          type: string
+          format: date
+        notes:
+          type: string
+        receipt_number:
+          type: string
+          readOnly: true
+        recorded_by:
+          type: integer
+          readOnly: true
+        voided_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        voided_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        void_reason:
+          type: string
+          readOnly: true
+        is_voided:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - is_voided
+      - member
+      - member_id
+      - receipt_number
+      - recorded_by
+      - subscription
+      - void_reason
+      - voided_at
+      - voided_by
+    MembershipPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        duration_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - duration_days
+      - id
+      - name
+      - price
+      - updated_at
+    MembershipSubscription:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        member:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          readOnly: true
+        member_id:
+          type: integer
+          writeOnly: true
+        plan:
+          allOf:
+          - $ref: '#/components/schemas/MembershipPlan'
+          readOnly: true
+        plan_id:
+          type: integer
+          writeOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/MembershipSubscriptionStatusEnum'
+          readOnly: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          readOnly: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        days_left:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - days_left
+      - end_date
+      - id
+      - member
+      - member_id
+      - plan
+      - plan_id
+      - price
+      - status
+      - updated_at
+    MembershipSubscriptionStatusEnum:
+      enum:
+      - active
+      - expired
+      - cancelled
+      type: string
+      description: |-
+        * `active` - Active
+        * `expired` - Expired
+        * `cancelled` - Cancelled
+    MethodEnum:
+      enum:
+      - cash
+      - transfer
+      - pos
+      - other
+      type: string
+      description: |-
+        * `cash` - Cash
+        * `transfer` - Bank transfer
+        * `pos` - POS
+        * `other` - Other
+    MyMembership:
+      type: object
+      properties:
+        subscription:
+          allOf:
+          - $ref: '#/components/schemas/MembershipSubscription'
+          nullable: true
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/MembershipPayment'
+      required:
+      - payments
+      - subscription
+    PatchedMembershipPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        duration_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedWorkoutPlan:
       type: object
       properties:
@@ -708,7 +1326,7 @@ components:
         notes:
           type: string
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/WorkoutPlanStatusEnum'
         exercises:
           type: array
           items:
@@ -786,6 +1404,11 @@ components:
       - gym_id
       - role
       - user_id
+    RenewMembership:
+      type: object
+      properties:
+        plan_id:
+          type: integer
     Role264Enum:
       enum:
       - admin
@@ -805,16 +1428,6 @@ components:
             $ref: '#/components/schemas/CodesEnum'
       required:
       - codes
-    StatusEnum:
-      enum:
-      - draft
-      - active
-      - archived
-      type: string
-      description: |-
-        * `draft` - Draft
-        * `active` - Active
-        * `archived` - Archived
     TokenPair:
       type: object
       properties:
@@ -916,6 +1529,14 @@ components:
       required:
       - id
       - phone
+    VoidPayment:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+      required:
+      - reason
     WorkoutExercise:
       type: object
       properties:
@@ -969,7 +1590,7 @@ components:
         notes:
           type: string
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/WorkoutPlanStatusEnum'
         exercises:
           type: array
           items:
@@ -989,6 +1610,16 @@ components:
       - title
       - trainer
       - updated_at
+    WorkoutPlanStatusEnum:
+      enum:
+      - draft
+      - active
+      - archived
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `active` - Active
+        * `archived` - Archived
   securitySchemes:
     jwtAuth:
       type: http
