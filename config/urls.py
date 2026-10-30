@@ -8,11 +8,15 @@ from accounts.views import (
     AdminPermissionsView,
     DeactivateUserView,
     InviteView,
+    MemberTrainerView,
     MeView,
+    MyMembersView,
+    MyTrainerView,
     PhoneTokenObtainPairView,
     PhoneTokenRefreshView,
     RedeemInviteView,
     RegisterGymView,
+    TrainerListView,
     UserListViewSet,
 )
 
@@ -34,6 +38,14 @@ urlpatterns = [
         AdminPermissionRevokeView.as_view(),
         name="admin_permission_revoke",
     ),
+    path("api/trainers/", TrainerListView.as_view(), name="trainer_list"),
+    path(
+        "api/members/<int:user_id>/trainer/",
+        MemberTrainerView.as_view(),
+        name="member_trainer",
+    ),
+    path("api/me/members/", MyMembersView.as_view(), name="my_members"),
+    path("api/me/trainer/", MyTrainerView.as_view(), name="my_trainer"),
     path("api/users/", UserListViewSet.as_view({"get": "list"}), name="user_list"),
     path(
         "api/users/<int:user_id>/deactivate/",

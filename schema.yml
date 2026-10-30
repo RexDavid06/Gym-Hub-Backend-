@@ -182,6 +182,102 @@ paths:
               schema:
                 $ref: '#/components/schemas/Me'
           description: ''
+  /api/me/members/:
+    get:
+      operationId: me_members_list
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/me/trainer/:
+    get:
+      operationId: me_trainer_retrieve
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberTrainer'
+          description: ''
+  /api/members/{user_id}/trainer/:
+    get:
+      operationId: members_trainer_retrieve
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - members
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberTrainer'
+          description: ''
+    put:
+      operationId: members_trainer_update
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - members
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainerAssignmentInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TrainerAssignmentInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TrainerAssignmentInput'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberTrainer'
+          description: ''
+    delete:
+      operationId: members_trainer_destroy
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - members
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/token/:
     post:
       operationId: token_create
@@ -237,6 +333,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenRefreshResponse'
+          description: ''
+  /api/trainers/:
+    get:
+      operationId: trainers_list
+      tags:
+      - trainers
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserSummary'
           description: ''
   /api/users/:
     get:
@@ -390,6 +502,8 @@ components:
       properties:
         id:
           type: integer
+        name:
+          type: string
         phone:
           type: string
         role:
@@ -407,9 +521,22 @@ components:
       required:
       - gym
       - id
+      - name
       - permission_codes
       - phone
       - role
+    MemberTrainer:
+      type: object
+      properties:
+        member:
+          $ref: '#/components/schemas/UserSummary'
+        trainer:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          nullable: true
+      required:
+      - member
+      - trainer
     PhoneToken:
       type: object
       properties:
@@ -519,6 +646,14 @@ components:
           type: string
       required:
       - access
+    TrainerAssignmentInput:
+      type: object
+      properties:
+        trainer_id:
+          type: integer
+          nullable: true
+      required:
+      - trainer_id
     UserList:
       type: object
       properties:
@@ -547,7 +682,13 @@ components:
           items:
             type: string
           readOnly: true
+        assigned_trainer:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          nullable: true
+          readOnly: true
       required:
+      - assigned_trainer
       - date_joined
       - id
       - permission_codes
@@ -566,6 +707,21 @@ components:
         * `admin` - Admin
         * `trainer` - Trainer
         * `member` - Member
+    UserSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        phone:
+          type: string
+          maxLength: 32
+      required:
+      - id
+      - phone
   securitySchemes:
     jwtAuth:
       type: http

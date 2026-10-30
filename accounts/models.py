@@ -47,6 +47,39 @@ class User(AbstractBaseUser, PermissionsMixin):
             raise ValidationError({"branch": "The branch must belong to the user's gym."})
 
 
+class TrainerAssignment(models.Model):
+    gym = models.ForeignKey(Gym, on_delete=models.CASCADE, related_name="trainer_assignments")
+    member = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="trainer_assignment"
+    )
+    trainer = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="member_assignments"
+    )
+    assigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="trainer_assignments_made"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = GymScopedManager()
+
+    def clean(self):
+        super().clean()
+        from django.core.exceptions import ValidationError
+
+        if self.gym_id and self.member_id and self.member.gym_id != self.gym_id:
+            raise ValidationError({"member": "The member must belong to the assignment's gym."})
+        if self.gym_id and self.trainer_id and self.trainer.gym_id != self.gym_id:
+            raise ValidationError({"trainer": "The trainer must belong to the assignment's gym."})
+        if self.member_id and self.member.role != User.Role.MEMBER:
+            raise ValidationError({"member": "Only members can be assigned to a trainer."})
+        if self.trainer_id and self.trainer.role != User.Role.TRAINER:
+            raise ValidationError({"trainer": "Only trainers can be assigned to members."})
+
+    def __str__(self):
+        return f"{self.member} -> {self.trainer}"
+
+
 class StaffPermission(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="staff_permissions"

@@ -29,6 +29,7 @@ class GymSummarySerializer(serializers.Serializer):
 
 class MeSerializer(serializers.Serializer):
     id = serializers.IntegerField()
+    name = serializers.CharField()
     phone = serializers.CharField()
     role = serializers.CharField()
     gym = serializers.SerializerMethodField()
@@ -111,8 +112,15 @@ class RedeemInviteResponseSerializer(TokenPairSerializer):
     pass
 
 
+class UserSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "name", "phone"]
+
+
 class UserListSerializer(serializers.ModelSerializer):
     permission_codes = serializers.SerializerMethodField()
+    assigned_trainer = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -125,6 +133,7 @@ class UserListSerializer(serializers.ModelSerializer):
             "is_active",
             "date_joined",
             "permission_codes",
+            "assigned_trainer",
         ]
 
     @extend_schema_field(serializers.ListField(child=serializers.CharField()))
@@ -132,6 +141,24 @@ class UserListSerializer(serializers.ModelSerializer):
         if user.role != User.Role.ADMIN:
             return []
         return list(user.staff_permissions.values_list("code", flat=True))
+
+    @extend_schema_field(UserSummarySerializer(allow_null=True))
+    def get_assigned_trainer(self, user):
+        if user.role != User.Role.MEMBER:
+            return None
+        assignment = getattr(user, "trainer_assignment", None)
+        if assignment is None:
+            return None
+        return UserSummarySerializer(assignment.trainer).data
+
+
+class TrainerAssignmentInputSerializer(serializers.Serializer):
+    trainer_id = serializers.IntegerField(allow_null=True)
+
+
+class MemberTrainerSerializer(serializers.Serializer):
+    member = UserSummarySerializer()
+    trainer = UserSummarySerializer(allow_null=True)
 
 
 ALLOWED_STAFF_PERMISSION_CODES = (

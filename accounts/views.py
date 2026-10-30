@@ -12,12 +12,13 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from accounts.models import Invite, StaffPermission, User
+from accounts.models import Invite, StaffPermission, TrainerAssignment, User
 from accounts.permissions import IsOwner
 from accounts.serializers import (
     InviteCreatedSerializer,
     InviteCreateSerializer,
     InviteListSerializer,
+    MemberTrainerSerializer,
     MeSerializer,
     PhoneTokenSerializer,
     RedeemInviteResponseSerializer,
@@ -28,7 +29,9 @@ from accounts.serializers import (
     TokenPairSerializer,
     TokenRefreshRequestSerializer,
     TokenRefreshResponseSerializer,
+    TrainerAssignmentInputSerializer,
     UserListSerializer,
+    UserSummarySerializer,
 )
 from accounts.tenant import GymScopedModelViewSet
 from gyms.models import Gym
@@ -241,6 +244,133 @@ class AdminPermissionRevokeView(AdminPermissionsView):
     http_method_names = ["delete", "options"]
 
 
+def has_any_staff_permission(user, codes):
+    if user.role == User.Role.OWNER:
+        return True
+    return user.role == User.Role.ADMIN and user.staff_permissions.filter(code__in=codes).exists()
+
+
+def can_assign_trainers(user):
+    return has_any_staff_permission(user, ["assign_trainers"])
+
+
+class TrainerListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(responses=UserSummarySerializer(many=True))
+    def get(self, request):
+        user = request.user
+        if not has_any_staff_permission(user, ["manage_trainers", "assign_trainers"]):
+            return Response({"detail": "You may not view trainers."}, status=403)
+        trainers = User.objects.filter(
+            gym_id=user.gym_id, role=User.Role.TRAINER, is_active=True
+        ).order_by("name", "phone")
+        return Response(UserSummarySerializer(trainers, many=True).data)
+
+
+class MemberTrainerView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_member(self, request, user_id):
+        from django.shortcuts import get_object_or_404
+
+        return get_object_or_404(
+            User.objects.filter(gym_id=request.user.gym_id, role=User.Role.MEMBER), pk=user_id
+        )
+
+    def assignment_response(self, member):
+        assignment = getattr(member, "trainer_assignment", None)
+        return MemberTrainerSerializer(
+            {"member": member, "trainer": assignment.trainer if assignment else None}
+        ).data
+
+    @extend_schema(responses=MemberTrainerSerializer)
+    def get(self, request, user_id):
+        member = self.get_member(request, user_id)
+        assignment = getattr(member, "trainer_assignment", None)
+        user = request.user
+        allowed = (
+            user.role == User.Role.OWNER
+            or has_any_staff_permission(user, ["assign_trainers", "manage_members"])
+            or (user.role == User.Role.TRAINER and assignment and assignment.trainer_id == user.id)
+            or (user.role == User.Role.MEMBER and member.id == user.id)
+        )
+        if not allowed:
+            return Response({"detail": "Member not found."}, status=404)
+        return Response(self.assignment_response(member))
+
+    @extend_schema(request=TrainerAssignmentInputSerializer, responses=MemberTrainerSerializer)
+    def put(self, request, user_id):
+        if not can_assign_trainers(request.user):
+            return Response({"detail": "You may not assign trainers."}, status=403)
+        member = self.get_member(request, user_id)
+        serializer = TrainerAssignmentInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        trainer_id = serializer.validated_data["trainer_id"]
+        if trainer_id is None:
+            TrainerAssignment.objects.filter(member=member).delete()
+        else:
+            from django.shortcuts import get_object_or_404
+
+            trainer = get_object_or_404(
+                User.objects.filter(
+                    gym_id=request.user.gym_id,
+                    role=User.Role.TRAINER,
+                    is_active=True,
+                ),
+                pk=trainer_id,
+            )
+            TrainerAssignment.objects.update_or_create(
+                member=member,
+                defaults={
+                    "gym": request.user.gym,
+                    "trainer": trainer,
+                    "assigned_by": request.user,
+                },
+            )
+        member = User.objects.select_related("trainer_assignment__trainer").get(pk=member.pk)
+        return Response(self.assignment_response(member))
+
+    @extend_schema(request=None, responses=None)
+    def delete(self, request, user_id):
+        if not can_assign_trainers(request.user):
+            return Response({"detail": "You may not assign trainers."}, status=403)
+        member = self.get_member(request, user_id)
+        TrainerAssignment.objects.filter(member=member).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class MyMembersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(responses=UserListSerializer(many=True))
+    def get(self, request):
+        if request.user.role != User.Role.TRAINER:
+            return Response({"detail": "Only trainers can view their members."}, status=403)
+        members = (
+            User.objects.filter(
+                gym_id=request.user.gym_id,
+                role=User.Role.MEMBER,
+                is_active=True,
+                trainer_assignment__trainer=request.user,
+                trainer_assignment__gym_id=request.user.gym_id,
+            )
+            .select_related("trainer_assignment__trainer")
+            .order_by("name", "phone")
+        )
+        return Response(UserListSerializer(members, many=True).data)
+
+
+class MyTrainerView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(responses=MemberTrainerSerializer)
+    def get(self, request):
+        if request.user.role != User.Role.MEMBER:
+            return Response({"detail": "Only members have an assigned trainer."}, status=403)
+        return Response(MemberTrainerView().assignment_response(request.user))
+
+
 class DeactivateUserView(APIView):
     permission_classes = [IsAuthenticated, IsOwner]
 
@@ -264,7 +394,7 @@ class UserListViewSet(GymScopedModelViewSet):
     http_method_names = ["get", "head", "options"]
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().select_related("trainer_assignment__trainer")
         user = self.request.user
         if user.role == User.Role.OWNER:
             pass
