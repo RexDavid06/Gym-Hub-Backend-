@@ -398,6 +398,154 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserList'
           description: ''
+  /api/workout-plans/:
+    get:
+      operationId: workout_plans_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: query
+        name: member
+        schema:
+          type: integer
+      tags:
+      - workout-plans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkoutPlan'
+          description: ''
+    post:
+      operationId: workout_plans_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - workout-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkoutPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WorkoutPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WorkoutPlan'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutPlan'
+          description: ''
+  /api/workout-plans/{id}/:
+    get:
+      operationId: workout_plans_retrieve
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - workout-plans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutPlan'
+          description: ''
+    put:
+      operationId: workout_plans_update
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - workout-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkoutPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WorkoutPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WorkoutPlan'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutPlan'
+          description: ''
+    patch:
+      operationId: workout_plans_partial_update
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - workout-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkoutPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkoutPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkoutPlan'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutPlan'
+          description: ''
+    delete:
+      operationId: workout_plans_destroy
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - workout-plans
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
 components:
   schemas:
     CodesEnum:
@@ -537,6 +685,42 @@ components:
       required:
       - member
       - trainer
+    PatchedWorkoutPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        member:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          readOnly: true
+        member_id:
+          type: integer
+          writeOnly: true
+        trainer:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        notes:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        exercises:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkoutExercise'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
     PhoneToken:
       type: object
       properties:
@@ -621,6 +805,16 @@ components:
             $ref: '#/components/schemas/CodesEnum'
       required:
       - codes
+    StatusEnum:
+      enum:
+      - draft
+      - active
+      - archived
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `active` - Active
+        * `archived` - Archived
     TokenPair:
       type: object
       properties:
@@ -722,6 +916,79 @@ components:
       required:
       - id
       - phone
+    WorkoutExercise:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        sets:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        reps:
+          type: string
+          maxLength: 50
+        weight:
+          type: string
+          maxLength: 50
+        notes:
+          type: string
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+      required:
+      - id
+      - name
+    WorkoutPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        member:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          readOnly: true
+        member_id:
+          type: integer
+          writeOnly: true
+        trainer:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        notes:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        exercises:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkoutExercise'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - member
+      - title
+      - trainer
+      - updated_at
   securitySchemes:
     jwtAuth:
       type: http

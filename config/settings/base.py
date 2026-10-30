@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "gyms",
     "accounts",
+    "workouts",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

@@ -19,6 +19,7 @@ from accounts.views import (
     TrainerListView,
     UserListViewSet,
 )
+from workouts.views import WorkoutPlanViewSet
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -51,6 +52,23 @@ urlpatterns = [
         "api/users/<int:user_id>/deactivate/",
         DeactivateUserView.as_view(),
         name="user_deactivate",
+    ),
+    path(
+        "api/workout-plans/",
+        WorkoutPlanViewSet.as_view({"get": "list", "post": "create"}),
+        name="workout_plan_list",
+    ),
+    path(
+        "api/workout-plans/<int:pk>/",
+        WorkoutPlanViewSet.as_view(
+            {
+                "get": "retrieve",
+                "put": "update",
+                "patch": "partial_update",
+                "delete": "destroy",
+            }
+        ),
+        name="workout_plan_detail",
     ),
     path("api/me/", MeView.as_view(), name="me"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
