@@ -1,15 +1,6 @@
-from rest_framework.permissions import BasePermission
+from accounts.permissions import require_staff_permission
 
-
-class CanManageMemberships(BasePermission):
-    message = "You do not have permission to manage memberships and payments."
-
-    def has_permission(self, request, view):
-        user = request.user
-        if not user or not user.is_authenticated:
-            return False
-        if user.role == "owner":
-            return True
-        return (
-            user.role == "admin" and user.staff_permissions.filter(code="manage_payments").exists()
-        )
+# Memberships and payments are gated by the manage_payments staff permission;
+# owners always pass. Built from the shared factory so the owner/admin rule
+# lives in exactly one place.
+CanManageMemberships = require_staff_permission("manage_payments")
