@@ -257,7 +257,6 @@ paths:
       - users
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:

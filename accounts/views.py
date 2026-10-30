@@ -260,6 +260,7 @@ class DeactivateUserView(APIView):
 class UserListViewSet(GymScopedModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserListSerializer
+    permission_classes = [IsAuthenticated]
     http_method_names = ["get", "head", "options"]
 
     def get_queryset(self):
