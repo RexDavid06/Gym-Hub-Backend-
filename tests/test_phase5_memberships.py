@@ -430,14 +430,14 @@ def test_money_fields_use_decimal_not_float():
 
     for model, field_name in money_fields:
         field = model._meta.get_field(field_name)
-        assert isinstance(field, models.DecimalField), f"{model.__name__}.{field_name} is not Decimal"
+        assert isinstance(
+            field, models.DecimalField
+        ), f"{model.__name__}.{field_name} is not Decimal"
         assert field.decimal_places == 2
 
     for model in (MembershipPlan, MembershipSubscription, MembershipPayment):
         assert not [
-            field.name
-            for field in model._meta.get_fields()
-            if isinstance(field, models.FloatField)
+            field.name for field in model._meta.get_fields() if isinstance(field, models.FloatField)
         ], f"{model.__name__} must not use FloatField for money"
 
 
@@ -571,9 +571,7 @@ def test_receipt_numbers_are_unique_per_gym():
     assert first_numbers == ["RC-0001-00001", "RC-0001-00002"]
     assert second_numbers == [f"RC-{second_gym.pk:04d}-00001"]
     assert len(set(first_numbers)) == 2
-    constraint_names = {
-        constraint.name for constraint in MembershipPayment._meta.constraints
-    }
+    constraint_names = {constraint.name for constraint in MembershipPayment._meta.constraints}
     assert "unique_receipt_number_per_gym" in constraint_names
 
 
@@ -618,8 +616,10 @@ def test_membership_and_payment_paths_denied_for_trainer_and_member(role):
         ).status_code
         == 403
     )
-    assert client.post(f"/api/memberships/{membership.pk}/renew/", {}, format="json").status_code == 403
-    assert client.post(f"/api/memberships/{membership.pk}/cancel/").status_code == 403
+    renew = client.post(f"/api/memberships/{membership.pk}/renew/", {}, format="json")
+    cancel = client.post(f"/api/memberships/{membership.pk}/cancel/")
+    assert renew.status_code == 403
+    assert cancel.status_code == 403
     assert client.get("/api/membership-payments/").status_code == 403
     assert client.get(f"/api/membership-payments/{payment.pk}/").status_code == 403
     assert (
@@ -663,8 +663,10 @@ def test_cross_gym_payment_void_and_membership_retrieve_return_404():
         ).status_code
         == 404
     )
-    assert client.post(f"/api/memberships/{membership.pk}/cancel/").status_code == 404
-    assert client.post(f"/api/memberships/{membership.pk}/renew/", {}, format="json").status_code == 404
+    cross_cancel = client.post(f"/api/memberships/{membership.pk}/cancel/")
+    cross_renew = client.post(f"/api/memberships/{membership.pk}/renew/", {}, format="json")
+    assert cross_cancel.status_code == 404
+    assert cross_renew.status_code == 404
     payment.refresh_from_db()
     assert not payment.is_voided
     assert not MembershipSubscription.objects.filter(pk=membership.pk, status="cancelled").exists()
@@ -687,4 +689,5 @@ def test_deactivated_user_is_blocked_from_membership_endpoints():
 
     assert client.get("/api/membership-plans/").status_code == 401
     assert client.get("/api/membership-payments/").status_code == 401
-    assert client.post("/api/membership-plans/", {"name": "X", "price": "1", "duration_days": 1}, format="json").status_code == 401
+    plan_payload = {"name": "X", "price": "1", "duration_days": 1}
+    assert client.post("/api/membership-plans/", plan_payload, format="json").status_code == 401
