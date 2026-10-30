@@ -14,6 +14,10 @@ class TokenPairSerializer(serializers.Serializer):
     access = serializers.CharField()
 
 
+class TokenRefreshRequestSerializer(serializers.Serializer):
+    refresh = serializers.CharField(write_only=True)
+
+
 class TokenRefreshResponseSerializer(serializers.Serializer):
     access = serializers.CharField()
 
@@ -75,6 +79,23 @@ class InviteCreatedSerializer(serializers.Serializer):
     code = serializers.CharField()
 
 
+class InviteListSerializer(serializers.ModelSerializer):
+    created_by = serializers.IntegerField(source="created_by_id", read_only=True)
+
+    class Meta:
+        model = Invite
+        fields = [
+            "id",
+            "role",
+            "phone",
+            "name",
+            "expires_at",
+            "used_at",
+            "created_at",
+            "created_by",
+        ]
+
+
 class RedeemInviteSerializer(serializers.Serializer):
     code = serializers.CharField()
     password = serializers.CharField(write_only=True, trim_whitespace=False)
@@ -91,9 +112,26 @@ class RedeemInviteResponseSerializer(TokenPairSerializer):
 
 
 class UserListSerializer(serializers.ModelSerializer):
+    permission_codes = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "name", "phone", "role", "gym", "is_active", "date_joined"]
+        fields = [
+            "id",
+            "name",
+            "phone",
+            "role",
+            "gym",
+            "is_active",
+            "date_joined",
+            "permission_codes",
+        ]
+
+    @extend_schema_field(serializers.ListField(child=serializers.CharField()))
+    def get_permission_codes(self, user):
+        if user.role != User.Role.ADMIN:
+            return []
+        return list(user.staff_permissions.values_list("code", flat=True))
 
 
 ALLOWED_STAFF_PERMISSION_CODES = (

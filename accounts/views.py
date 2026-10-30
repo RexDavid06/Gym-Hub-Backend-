@@ -3,7 +3,7 @@ import secrets
 
 from django.db import IntegrityError, transaction
 from django.utils import timezone
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -17,6 +17,7 @@ from accounts.permissions import IsOwner
 from accounts.serializers import (
     InviteCreatedSerializer,
     InviteCreateSerializer,
+    InviteListSerializer,
     MeSerializer,
     PhoneTokenSerializer,
     RedeemInviteResponseSerializer,
@@ -25,6 +26,7 @@ from accounts.serializers import (
     RegisterGymSerializer,
     StaffPermissionSetSerializer,
     TokenPairSerializer,
+    TokenRefreshRequestSerializer,
     TokenRefreshResponseSerializer,
     UserListSerializer,
 )
@@ -53,7 +55,7 @@ class PhoneTokenObtainPairView(TokenObtainPairView):
 
 
 class PhoneTokenRefreshView(TokenRefreshView):
-    @extend_schema(responses=TokenRefreshResponseSerializer)
+    @extend_schema(request=TokenRefreshRequestSerializer, responses=TokenRefreshResponseSerializer)
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
 
@@ -97,6 +99,16 @@ class RegisterGymView(APIView):
 
 class InviteView(APIView):
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [IsAuthenticated(), IsOwner()]
+        return [IsAuthenticated()]
+
+    @extend_schema(responses=InviteListSerializer(many=True))
+    def get(self, request):
+        invites = Invite.objects.filter(gym_id=request.user.gym_id).order_by("-created_at")
+        return Response(InviteListSerializer(invites, many=True).data)
 
     @extend_schema(request=InviteCreateSerializer, responses=InviteCreatedSerializer)
     def post(self, request):
@@ -272,6 +284,17 @@ class UserListViewSet(GymScopedModelViewSet):
             queryset = queryset.filter(role=role)
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "role",
+                str,
+                OpenApiParameter.QUERY,
+                required=False,
+                enum=User.Role.values,
+            )
+        ]
+    )
     def list(self, request, *args, **kwargs):
         if (
             request.user.role != User.Role.OWNER

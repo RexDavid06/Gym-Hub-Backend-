@@ -128,6 +128,21 @@ paths:
                 $ref: '#/components/schemas/RegisteredGym'
           description: ''
   /api/invites/:
+    get:
+      operationId: invites_list
+      tags:
+      - invites
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InviteList'
+          description: ''
     post:
       operationId: invites_create
       tags:
@@ -208,13 +223,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenRefresh'
+              $ref: '#/components/schemas/TokenRefreshRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TokenRefresh'
+              $ref: '#/components/schemas/TokenRefreshRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TokenRefresh'
+              $ref: '#/components/schemas/TokenRefreshRequest'
         required: true
       responses:
         '200':
@@ -227,6 +242,17 @@ paths:
     get:
       operationId: users_list
       description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: query
+        name: role
+        schema:
+          type: string
+          enum:
+          - admin
+          - member
+          - owner
+          - super_admin
+          - trainer
       tags:
       - users
       security:
@@ -291,7 +317,7 @@ components:
       type: object
       properties:
         role:
-          $ref: '#/components/schemas/InviteCreateRoleEnum'
+          $ref: '#/components/schemas/Role264Enum'
         phone:
           type: string
           maxLength: 32
@@ -302,16 +328,6 @@ components:
       - name
       - phone
       - role
-    InviteCreateRoleEnum:
-      enum:
-      - admin
-      - trainer
-      - member
-      type: string
-      description: |-
-        * `admin` - Admin
-        * `trainer` - Trainer
-        * `member` - Member
     InviteCreated:
       type: object
       properties:
@@ -331,6 +347,41 @@ components:
       required:
       - code
       - expires_at
+      - id
+      - name
+      - phone
+      - role
+    InviteList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        role:
+          $ref: '#/components/schemas/Role264Enum'
+        phone:
+          type: string
+          maxLength: 32
+        name:
+          type: string
+          maxLength: 200
+        expires_at:
+          type: string
+          format: date-time
+        used_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: integer
+          readOnly: true
+      required:
+      - created_at
+      - created_by
       - id
       - name
       - phone
@@ -425,6 +476,16 @@ components:
       - gym_id
       - role
       - user_id
+    Role264Enum:
+      enum:
+      - admin
+      - trainer
+      - member
+      type: string
+      description: |-
+        * `admin` - Admin
+        * `trainer` - Trainer
+        * `member` - Member
     StaffPermissionSet:
       type: object
       properties:
@@ -444,17 +505,13 @@ components:
       required:
       - access
       - refresh
-    TokenRefresh:
+    TokenRefreshRequest:
       type: object
       properties:
-        access:
-          type: string
-          readOnly: true
         refresh:
           type: string
           writeOnly: true
       required:
-      - access
       - refresh
     TokenRefreshResponse:
       type: object
@@ -486,9 +543,15 @@ components:
           type: string
           format: date-time
           readOnly: true
+        permission_codes:
+          type: array
+          items:
+            type: string
+          readOnly: true
       required:
       - date_joined
       - id
+      - permission_codes
       - phone
     UserListRoleEnum:
       enum:
