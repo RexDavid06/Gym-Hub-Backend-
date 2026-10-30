@@ -1,5 +1,10 @@
+from datetime import timedelta
+
 import pytest
+from django.conf import settings
+from django.utils import timezone
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import AccessToken
 
 from accounts.models import User
 from gyms.models import Gym
@@ -92,3 +97,18 @@ def test_rotated_refresh_token_cannot_be_reused():
     assert rotated.status_code == 200
     assert replay.status_code == 401
     assert refresh(rotated.data["refresh"]).status_code == 200
+
+
+def test_access_token_lifetime_is_pinned_at_fifteen_minutes():
+    lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
+
+    assert lifetime == timedelta(minutes=15)
+    assert lifetime <= timedelta(minutes=15)
+
+
+def test_access_token_expires_within_fifteen_minutes():
+    tokens = login(make_user("+2347100000008"))
+    expires_at = AccessToken(tokens["access"]).payload["exp"]
+    lifetime_seconds = expires_at - timezone.now().timestamp()
+
+    assert 0 < lifetime_seconds <= 15 * 60

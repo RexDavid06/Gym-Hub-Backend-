@@ -37,6 +37,7 @@ from accounts.serializers import (
     UserSummarySerializer,
 )
 from accounts.tenant import GymScopedModelViewSet
+from accounts.throttling import PhoneLoginThrottle
 from gyms.models import Gym
 
 
@@ -54,7 +55,7 @@ class PhoneTokenObtainPairSerializer(TokenObtainPairSerializer):
 class PhoneTokenObtainPairView(TokenObtainPairView):
     serializer_class = PhoneTokenObtainPairSerializer
     permission_classes = [AllowAny]
-    throttle_classes = [ScopedRateThrottle]
+    throttle_classes = [ScopedRateThrottle, PhoneLoginThrottle]
     throttle_scope = "login"
 
     @extend_schema(request=PhoneTokenSerializer, responses=TokenPairSerializer)
