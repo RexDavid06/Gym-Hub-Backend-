@@ -10,13 +10,20 @@ class GymScopedQuerySet(models.QuerySet):
         return self.filter(gym_id=gym_id)
 
 
-class GymScopedManager(models.Manager.from_queryset(GymScopedQuerySet)):
-    pass
+class GymFilterableManager(models.Manager.from_queryset(GymScopedQuerySet)):
+    """Manager that can filter by gym through ``for_gym()``.
+
+    It does **not** scope implicitly: a manager has no per-request state, so
+    ``.all()`` returns every tenant's rows. API code must scope through
+    ``GymScopedQuerysetMixin`` (or call ``for_gym()`` explicitly).
+    ``tests/test_tenancy_guard.py`` enforces that every ViewSet over a tenant
+    model does exactly that.
+    """
 
 
 class GymOwnedModel(models.Model):
     gym = models.ForeignKey("gyms.Gym", on_delete=models.CASCADE)
-    objects = GymScopedManager()
+    objects = GymFilterableManager()
 
     class Meta:
         abstract = True
