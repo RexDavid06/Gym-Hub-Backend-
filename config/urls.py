@@ -19,6 +19,12 @@ from accounts.views import (
     TrainerListView,
     UserListViewSet,
 )
+from memberships.views import (
+    MembershipPaymentViewSet,
+    MembershipPlanViewSet,
+    MembershipSubscriptionViewSet,
+    MyMembershipView,
+)
 from workouts.views import WorkoutPlanViewSet
 
 urlpatterns = [
@@ -70,6 +76,59 @@ urlpatterns = [
         ),
         name="workout_plan_detail",
     ),
+    path(
+        "api/membership-plans/",
+        MembershipPlanViewSet.as_view({"get": "list", "post": "create"}),
+        name="membership_plan_list",
+    ),
+    path(
+        "api/membership-plans/<int:pk>/",
+        MembershipPlanViewSet.as_view(
+            {
+                "get": "retrieve",
+                "put": "update",
+                "patch": "partial_update",
+                "delete": "destroy",
+            }
+        ),
+        name="membership_plan_detail",
+    ),
+    path(
+        "api/memberships/",
+        MembershipSubscriptionViewSet.as_view({"get": "list", "post": "create"}),
+        name="membership_list",
+    ),
+    path(
+        "api/memberships/<int:pk>/",
+        MembershipSubscriptionViewSet.as_view({"get": "retrieve"}),
+        name="membership_detail",
+    ),
+    path(
+        "api/memberships/<int:pk>/renew/",
+        MembershipSubscriptionViewSet.as_view({"post": "renew"}),
+        name="membership_renew",
+    ),
+    path(
+        "api/memberships/<int:pk>/cancel/",
+        MembershipSubscriptionViewSet.as_view({"post": "cancel"}),
+        name="membership_cancel",
+    ),
+    path(
+        "api/membership-payments/",
+        MembershipPaymentViewSet.as_view({"get": "list", "post": "create"}),
+        name="membership_payment_list",
+    ),
+    path(
+        "api/membership-payments/<int:pk>/",
+        MembershipPaymentViewSet.as_view({"get": "retrieve"}),
+        name="membership_payment_detail",
+    ),
+    path(
+        "api/membership-payments/<int:pk>/void/",
+        MembershipPaymentViewSet.as_view({"post": "void"}),
+        name="membership_payment_void",
+    ),
+    path("api/me/membership/", MyMembershipView.as_view(), name="my_membership"),
     path("api/me/", MeView.as_view(), name="me"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
