@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "drf_spectacular",
+    "rest_framework_simplejwt.token_blacklist",
     "gyms",
     "accounts",
     "workouts",
@@ -74,16 +75,27 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework_simplejwt.authentication.JWTAuthentication"],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "DEFAULT_THROTTLE_RATES": {"invite_redeem": "5/hour"},
+    "DEFAULT_THROTTLE_RATES": {
+        "invite_redeem": "5/hour",
+        "login": "10/min",
+        "register_gym": "5/hour",
+    },
 }
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": False,
 }
 SPECTACULAR_SETTINGS = {
     "TITLE": "Gym Management API",
     "DESCRIPTION": "Foundation API for the Gym Management SaaS.",
     "VERSION": "0.1.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "ENUM_NAME_OVERRIDES": {
+        "UserRoleEnum": "accounts.models.USER_ROLE_CHOICES",
+        "InviteRoleEnum": "accounts.models.INVITE_ROLE_CHOICES",
+    },
 }
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=["http://localhost:5173"])
