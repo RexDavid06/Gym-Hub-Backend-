@@ -691,3 +691,85 @@ def test_deactivated_user_is_blocked_from_membership_endpoints():
     assert client.get("/api/membership-payments/").status_code == 401
     plan_payload = {"name": "X", "price": "1", "duration_days": 1}
     assert client.post("/api/membership-plans/", plan_payload, format="json").status_code == 401
+
+
+def test_subscription_list_filters_by_status():
+    gym, owner, _, _, member, other_member = setup_people()
+    plan = make_plan(gym)
+    active = make_subscription(gym, member, plan, owner)
+    expired = make_subscription(
+        gym,
+        other_member,
+        plan,
+        owner,
+        start_date=timezone.localdate() - timedelta(days=40),
+    )
+
+    active_rows = client_for(owner).get("/api/memberships/?status=active")
+    expired_rows = client_for(owner).get("/api/memberships/?status=expired")
+    unknown = client_for(owner).get("/api/memberships/?status=banana")
+
+    assert [row["id"] for row in active_rows.data] == [active.pk]
+    assert [row["id"] for row in expired_rows.data] == [expired.pk]
+    assert unknown.data == []
+
+
+def test_subscription_list_filters_by_expiring_within_days():
+    gym, owner, _, _, member, other_member = setup_people()
+    third_member = make_user("+2349300000040", User.Role.MEMBER, gym, "Third Member")
+    fourth_member = make_user("+2349300000041", User.Role.MEMBER, gym, "Fourth Member")
+    plan = make_plan(gym, duration=30)
+    expiring = make_subscription(
+        gym, member, plan, owner, start_date=timezone.localdate() - timedelta(days=26)
+    )
+    running = make_subscription(gym, other_member, plan, owner)
+    already_expired = make_subscription(
+        gym,
+        third_member,
+        plan,
+        owner,
+        start_date=timezone.localdate() - timedelta(days=40),
+    )
+    cancelled = make_subscription(gym, fourth_member, plan, owner)
+    cancelled.status = MembershipSubscription.Status.CANCELLED
+    cancelled.save(update_fields=["status"])
+
+    within_week = client_for(owner).get("/api/memberships/?expiring_within=7")
+    within_month = client_for(owner).get("/api/memberships/?expiring_within=30")
+    invalid = client_for(owner).get("/api/memberships/?expiring_within=soon")
+    negative = client_for(owner).get("/api/memberships/?expiring_within=-1")
+
+    assert [row["id"] for row in within_week.data] == [expiring.pk]
+    assert sorted(row["id"] for row in within_month.data) == sorted([expiring.pk, running.pk])
+    assert already_expired.pk not in [row["id"] for row in within_month.data]
+    assert cancelled.pk not in [row["id"] for row in within_month.data]
+    assert invalid.data == []
+    assert negative.data == []
+
+
+def test_plan_can_be_deactivated_and_is_not_usable_for_new_subscriptions():
+    gym, owner, _, _, member, _ = setup_people()
+    plan = make_plan(gym)
+
+    deactivated = client_for(owner).patch(
+        f"/api/membership-plans/{plan.pk}/", {"is_active": False}, format="json"
+    )
+    listed = client_for(owner).get("/api/membership-plans/")
+    assigned = client_for(owner).post(
+        "/api/memberships/", {"member_id": member.pk, "plan_id": plan.pk}, format="json"
+    )
+
+    assert deactivated.status_code == 200
+    assert deactivated.data["is_active"] is False
+    assert listed.data[0]["is_active"] is False
+    assert assigned.status_code == 404
+    assert not MembershipSubscription.objects.exists()
+
+
+def test_member_subscription_endpoint_denies_non_members():
+    _, owner, admin, trainer, member, _ = setup_people()
+
+    assert client_for(member).get("/api/me/membership/").status_code == 200
+    assert client_for(trainer).get("/api/me/membership/").status_code == 403
+    assert client_for(admin).get("/api/me/membership/").status_code == 403
+    assert client_for(owner).get("/api/me/membership/").status_code == 403

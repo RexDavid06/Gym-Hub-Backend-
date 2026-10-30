@@ -75,14 +75,19 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework_simplejwt.authentication.JWTAuthentication"],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Proxies in front of the API. 0 ignores X-Forwarded-For and throttles on
+    # REMOTE_ADDR; set to match the host (e.g. 1 on Render) so per-IP limits key
+    # on the real client. Must equal the number of trusted proxies.
+    "NUM_PROXIES": env.int("NUM_PROXIES", default=0),
     "DEFAULT_THROTTLE_RATES": {
         "invite_redeem": "5/hour",
-        "login": "10/min",
-        "register_gym": "5/hour",
+        "login": "30/min",
+        "login_phone": "5/min",
+        "register_gym": env("REGISTER_GYM_THROTTLE_RATE", default="5/hour"),
     },
 }
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
