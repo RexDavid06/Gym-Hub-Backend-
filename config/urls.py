@@ -8,6 +8,7 @@ from accounts.views import (
     AdminPermissionsView,
     DeactivateUserView,
     InviteView,
+    LogoutView,
     MemberTrainerView,
     MeView,
     MyMembersView,
@@ -33,6 +34,7 @@ urlpatterns = [
     path("api/token/refresh/", PhoneTokenRefreshView.as_view(), name="token_refresh"),
     path("api/auth/register-gym/", RegisterGymView.as_view(), name="register_gym"),
     path("api/auth/redeem-invite/", RedeemInviteView.as_view(), name="redeem_invite"),
+    path("api/auth/logout/", LogoutView.as_view(), name="logout"),
     path("api/invites/", InviteView.as_view(), name="invite_create"),
     path("api/admins/", AdminListView.as_view(), name="admin_list"),
     path(

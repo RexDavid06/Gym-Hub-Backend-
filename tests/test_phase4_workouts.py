@@ -231,3 +231,134 @@ def test_workout_plan_endpoints_require_authentication(method, path, payload):
     response = getattr(APIClient(), method)(path, payload, format="json")
 
     assert response.status_code == 401
+
+
+def test_trainer_cannot_read_edit_or_delete_plan_for_unassigned_member():
+    gym, owner, _, trainer, _ = setup_team()
+    other_trainer = make_user("+2349200000060", User.Role.TRAINER, gym, "Other Trainer")
+    other_member = make_user("+2349200000061", User.Role.MEMBER, gym, "Other Member")
+    TrainerAssignment.objects.create(
+        gym=gym, member=other_member, trainer=other_trainer, assigned_by=owner
+    )
+    plan = WorkoutPlan.objects.create(
+        gym=gym, member=other_member, trainer=other_trainer, title="Not Mine"
+    )
+    client = client_for(trainer)
+
+    assert client.get("/api/workout-plans/").data == []
+    assert client.get(f"/api/workout-plans/{plan.pk}/").status_code == 404
+    assert (
+        client.patch(
+            f"/api/workout-plans/{plan.pk}/", {"title": "Hijacked"}, format="json"
+        ).status_code
+        == 404
+    )
+    assert client.delete(f"/api/workout-plans/{plan.pk}/").status_code == 404
+    plan.refresh_from_db()
+    assert plan.title == "Not Mine"
+
+
+def test_trainer_cannot_create_plan_for_member_assigned_to_another_trainer():
+    gym, owner, _, trainer, _ = setup_team()
+    other_trainer = make_user("+2349200000062", User.Role.TRAINER, gym, "Other Trainer")
+    other_member = make_user("+2349200000063", User.Role.MEMBER, gym, "Other Member")
+    TrainerAssignment.objects.create(
+        gym=gym, member=other_member, trainer=other_trainer, assigned_by=owner
+    )
+
+    response = client_for(trainer).post(
+        "/api/workout-plans/", plan_payload(other_member), format="json"
+    )
+
+    assert response.status_code == 403
+    assert not WorkoutPlan.objects.exists()
+
+
+def test_reassignment_revokes_old_trainer_and_grants_new_trainer():
+    gym, owner, _, old_trainer, member = setup_team()
+    new_trainer = make_user("+2349200000064", User.Role.TRAINER, gym, "New Trainer")
+    old_plan = WorkoutPlan.objects.create(
+        gym=gym, member=member, trainer=old_trainer, title="Old Plan"
+    )
+
+    reassign = client_for(owner).put(
+        f"/api/members/{member.pk}/trainer/", {"trainer_id": new_trainer.pk}, format="json"
+    )
+
+    assert reassign.status_code == 200
+    assert client_for(old_trainer).get("/api/workout-plans/").data == []
+    assert client_for(old_trainer).get(f"/api/workout-plans/{old_plan.pk}/").status_code == 404
+    assert (
+        client_for(old_trainer)
+        .patch(f"/api/workout-plans/{old_plan.pk}/", {"title": "x"}, format="json")
+        .status_code
+        == 404
+    )
+    assert client_for(old_trainer).delete(f"/api/workout-plans/{old_plan.pk}/").status_code == 404
+    assert (
+        client_for(old_trainer)
+        .post("/api/workout-plans/", plan_payload(member), format="json")
+        .status_code
+        == 403
+    )
+
+    created = client_for(new_trainer).post(
+        "/api/workout-plans/", plan_payload(member, title="New Plan"), format="json"
+    )
+
+    assert created.status_code == 201
+    new_plan_id = created.data["id"]
+    assert [row["id"] for row in client_for(new_trainer).get("/api/workout-plans/").data] == [
+        new_plan_id
+    ]
+    assert client_for(new_trainer).get(f"/api/workout-plans/{new_plan_id}/").status_code == 200
+    assert client_for(new_trainer).get(f"/api/workout-plans/{old_plan.pk}/").status_code == 404
+
+
+def test_trainer_cannot_assign_themselves_to_a_member():
+    gym, owner, _, trainer, member = setup_team()
+    TrainerAssignment.objects.filter(member=member).delete()
+
+    response = client_for(trainer).put(
+        f"/api/members/{member.pk}/trainer/", {"trainer_id": trainer.pk}, format="json"
+    )
+
+    assert response.status_code == 403
+    assert not TrainerAssignment.objects.filter(member=member).exists()
+    assert (
+        client_for(trainer)
+        .post("/api/workout-plans/", plan_payload(member), format="json")
+        .status_code
+        == 403
+    )
+
+
+def test_cross_gym_workout_plan_access_returns_404():
+    gym, owner, _, trainer, member = setup_team()
+    own_plan = WorkoutPlan.objects.create(
+        gym=gym, member=member, trainer=trainer, title="Gym A Plan"
+    )
+    other_gym = Gym.objects.create(name="Other Gym")
+    other_owner = make_user("+2349200000065", User.Role.OWNER, other_gym, "Other Owner")
+    other_trainer = make_user("+2349200000066", User.Role.TRAINER, other_gym, "Other Trainer")
+    other_member = make_user("+2349200000067", User.Role.MEMBER, other_gym, "Other Member")
+    TrainerAssignment.objects.create(
+        gym=other_gym, member=other_member, trainer=other_trainer, assigned_by=other_owner
+    )
+    other_plan = WorkoutPlan.objects.create(
+        gym=other_gym, member=other_member, trainer=other_trainer, title="Foreign Plan"
+    )
+
+    assert client_for(trainer).get(f"/api/workout-plans/{other_plan.pk}/").status_code == 404
+    assert (
+        client_for(trainer)
+        .patch(f"/api/workout-plans/{other_plan.pk}/", {"title": "x"}, format="json")
+        .status_code
+        == 404
+    )
+    assert client_for(trainer).delete(f"/api/workout-plans/{other_plan.pk}/").status_code == 404
+    assert client_for(member).get(f"/api/workout-plans/{other_plan.pk}/").status_code == 404
+    assert client_for(other_member).get(f"/api/workout-plans/{own_plan.pk}/").status_code == 404
+    assert client_for(other_owner).get(f"/api/workout-plans/{own_plan.pk}/").status_code == 404
+    assert WorkoutPlan.objects.filter(pk=other_plan.pk).exists()
+    assert WorkoutPlan.objects.filter(pk=own_plan.pk).exists()

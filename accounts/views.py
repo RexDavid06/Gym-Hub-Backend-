@@ -9,7 +9,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from accounts.models import Invite, StaffPermission, TrainerAssignment, User
@@ -18,6 +20,7 @@ from accounts.serializers import (
     InviteCreatedSerializer,
     InviteCreateSerializer,
     InviteListSerializer,
+    LogoutSerializer,
     MemberTrainerSerializer,
     MeSerializer,
     PhoneTokenSerializer,
@@ -51,6 +54,8 @@ class PhoneTokenObtainPairSerializer(TokenObtainPairSerializer):
 class PhoneTokenObtainPairView(TokenObtainPairView):
     serializer_class = PhoneTokenObtainPairSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "login"
 
     @extend_schema(request=PhoneTokenSerializer, responses=TokenPairSerializer)
     def post(self, request, *args, **kwargs):
@@ -63,6 +68,37 @@ class PhoneTokenRefreshView(TokenRefreshView):
         return super().post(request, *args, **kwargs)
 
 
+class LogoutView(APIView):
+    """Revoke a refresh token so it can no longer be rotated or exchanged."""
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(request=LogoutSerializer, responses={204: None})
+    def post(self, request):
+        serializer = LogoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            token = RefreshToken(serializer.validated_data["refresh"])
+        except TokenError:
+            return Response(
+                {"detail": "The refresh token is invalid or expired."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if str(token["user_id"]) != str(request.user.pk):
+            return Response(
+                {"detail": "The refresh token does not belong to this user."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            token.blacklist()
+        except TokenError:
+            return Response(
+                {"detail": "The refresh token is invalid or expired."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -73,6 +109,8 @@ class MeView(APIView):
 
 class RegisterGymView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "register_gym"
 
     @extend_schema(request=RegisterGymSerializer, responses=RegisteredGymSerializer)
     def post(self, request):

@@ -15,15 +15,32 @@ class IsGymStaff(BasePermission):
         )
 
 
-class HasStaffPermission(BasePermission):
-    def __init__(self, code=None):
-        self.code = code
+def require_staff_permission(code):
+    """Return a DRF permission class that requires one staff permission code.
 
-    def has_permission(self, request, view):
-        user = request.user
-        if not user or not user.is_authenticated:
-            return False
-        if user.role == "owner":
-            return True
-        code = self.code or getattr(view, "staff_permission_code", None)
-        return bool(code and user.staff_permissions.filter(code=code).exists())
+    Owners always pass. Admins pass only when they hold ``code``; every other
+    role is denied. This is a factory because DRF instantiates permission
+    classes without arguments, so a class that takes ``code`` in ``__init__``
+    can never be used inside ``permission_classes``.
+
+    Usage::
+
+        permission_classes = [IsAuthenticated, require_staff_permission("manage_members")]
+    """
+
+    class StaffPermissionRequired(BasePermission):
+        message = "You do not have permission to perform this action."
+
+        def has_permission(self, request, view):
+            user = request.user
+            if not user or not user.is_authenticated:
+                return False
+            if user.role == "owner":
+                return True
+            if user.role != "admin":
+                return False
+            return user.staff_permissions.filter(code=code).exists()
+
+    StaffPermissionRequired.__name__ = f"RequireStaffPermission_{code}"
+    StaffPermissionRequired.__qualname__ = StaffPermissionRequired.__name__
+    return StaffPermissionRequired

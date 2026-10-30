@@ -7,8 +7,8 @@ from rest_framework import serializers
 from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
 
 from accounts.models import StaffPermission, User
-from accounts.permissions import HasStaffPermission, IsGymStaff, IsOwner
-from accounts.tenant import GymOwnedModel, GymScopedManager, GymScopedModelViewSet
+from accounts.permissions import IsGymStaff, IsOwner, require_staff_permission
+from accounts.tenant import GymFilterableManager, GymOwnedModel, GymScopedModelViewSet
 from gyms.models import Branch, Gym
 
 pytestmark = pytest.mark.django_db
@@ -89,7 +89,7 @@ def test_gym_scoped_queryset_never_returns_another_gyms_rows():
         GymScopedLeakRow.objects.create(gym=first, label="first")
         GymScopedLeakRow.objects.create(gym=second, label="second")
 
-        assert isinstance(GymScopedLeakRow.objects, GymScopedManager)
+        assert isinstance(GymScopedLeakRow.objects, GymFilterableManager)
         assert list(GymScopedLeakRow.objects.for_gym(first).values_list("label", flat=True)) == [
             "first"
         ]
@@ -147,7 +147,9 @@ def test_has_staff_permission_allows_assigned_code():
     StaffPermission.objects.create(user=user, code="members.read")
     request = SimpleNamespace(user=user)
 
-    assert HasStaffPermission("members.read").has_permission(request, SimpleNamespace())
+    permission = require_staff_permission("members.read")()
+
+    assert permission.has_permission(request, SimpleNamespace())
 
 
 def test_has_staff_permission_denies_unassigned_code():
@@ -157,7 +159,9 @@ def test_has_staff_permission_denies_unassigned_code():
     )
     request = SimpleNamespace(user=user)
 
-    assert not HasStaffPermission("members.write").has_permission(request, SimpleNamespace())
+    permission = require_staff_permission("members.write")()
+
+    assert not permission.has_permission(request, SimpleNamespace())
 
 
 def test_owner_always_passes_permission_checks():
@@ -170,4 +174,4 @@ def test_owner_always_passes_permission_checks():
 
     assert IsOwner().has_permission(request, view)
     assert IsGymStaff().has_permission(request, view)
-    assert HasStaffPermission("unassigned.permission").has_permission(request, view)
+    assert require_staff_permission("unassigned.permission")().has_permission(request, view)

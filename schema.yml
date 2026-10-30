@@ -73,6 +73,29 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: Revoke a refresh token so it can no longer be rotated or exchanged.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Logout'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Logout'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Logout'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/auth/redeem-invite/:
     post:
       operationId: auth_redeem_invite_create
@@ -961,7 +984,7 @@ components:
       type: object
       properties:
         role:
-          $ref: '#/components/schemas/Role264Enum'
+          $ref: '#/components/schemas/InviteRoleEnum'
         phone:
           type: string
           maxLength: 32
@@ -1002,7 +1025,7 @@ components:
           type: integer
           readOnly: true
         role:
-          $ref: '#/components/schemas/Role264Enum'
+          $ref: '#/components/schemas/InviteRoleEnum'
         phone:
           type: string
           maxLength: 32
@@ -1030,6 +1053,23 @@ components:
       - name
       - phone
       - role
+    InviteRoleEnum:
+      enum:
+      - admin
+      - trainer
+      - member
+      type: string
+      description: |-
+        * `admin` - Admin
+        * `trainer` - Trainer
+        * `member` - Member
+    Logout:
+      type: object
+      properties:
+        refresh:
+          type: string
+      required:
+      - refresh
     Me:
       type: object
       properties:
@@ -1409,16 +1449,6 @@ components:
       properties:
         plan_id:
           type: integer
-    Role264Enum:
-      enum:
-      - admin
-      - trainer
-      - member
-      type: string
-      description: |-
-        * `admin` - Admin
-        * `trainer` - Trainer
-        * `member` - Member
     StaffPermissionSet:
       type: object
       properties:
@@ -1451,6 +1481,8 @@ components:
       properties:
         access:
           type: string
+        refresh:
+          type: string
       required:
       - access
     TrainerAssignmentInput:
@@ -1474,7 +1506,7 @@ components:
           type: string
           maxLength: 32
         role:
-          $ref: '#/components/schemas/UserListRoleEnum'
+          $ref: '#/components/schemas/UserRoleEnum'
         gym:
           type: integer
           nullable: true
@@ -1500,7 +1532,7 @@ components:
       - id
       - permission_codes
       - phone
-    UserListRoleEnum:
+    UserRoleEnum:
       enum:
       - super_admin
       - owner

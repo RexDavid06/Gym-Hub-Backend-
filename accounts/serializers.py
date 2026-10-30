@@ -20,6 +20,11 @@ class TokenRefreshRequestSerializer(serializers.Serializer):
 
 class TokenRefreshResponseSerializer(serializers.Serializer):
     access = serializers.CharField()
+    refresh = serializers.CharField(required=False)
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
 
 
 class GymSummarySerializer(serializers.Serializer):

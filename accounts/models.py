@@ -7,7 +7,7 @@ from django.db import models
 from django.utils import timezone
 
 from accounts.managers import UserManager
-from accounts.tenant import GymScopedManager
+from accounts.tenant import GymFilterableManager
 from gyms.models import Branch, Gym
 
 
@@ -61,7 +61,7 @@ class TrainerAssignment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = GymScopedManager()
+    objects = GymFilterableManager()
 
     def clean(self):
         super().clean()
@@ -119,7 +119,14 @@ class Invite(models.Model):
     used_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    objects = GymScopedManager()
+    objects = GymFilterableManager()
 
     def __str__(self):
         return f"{self.role} invite for {self.phone}"
+
+
+# ENUM_NAME_OVERRIDES resolves a dotted path to a single attribute of an
+# importable module, so the choice sets are re-exported from here to keep the
+# OpenAPI role enums from colliding (see SPECTACULAR_SETTINGS).
+USER_ROLE_CHOICES = User.Role.choices
+INVITE_ROLE_CHOICES = Invite.Role.choices
