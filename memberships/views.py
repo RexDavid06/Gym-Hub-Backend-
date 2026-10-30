@@ -100,10 +100,45 @@ class MembershipSubscriptionViewSet(GymScopedModelViewSet):
             except ValueError:
                 return queryset.none()
             queryset = queryset.filter(member_id=member_id)
+        status_filter = self.request.query_params.get("status")
+        if status_filter:
+            if status_filter not in MembershipSubscription.Status.values:
+                return queryset.none()
+            queryset = queryset.filter(status=status_filter)
+        expiring_within = self.request.query_params.get("expiring_within")
+        if expiring_within not in (None, ""):
+            try:
+                days = int(expiring_within)
+            except (TypeError, ValueError):
+                return queryset.none()
+            if days < 0:
+                return queryset.none()
+            today = timezone.localdate()
+            queryset = queryset.filter(
+                status=MembershipSubscription.Status.ACTIVE,
+                end_date__gte=today,
+                end_date__lte=today + timedelta(days=days),
+            )
         return queryset
 
     @extend_schema(
-        parameters=[OpenApiParameter("member", int, OpenApiParameter.QUERY, required=False)]
+        parameters=[
+            OpenApiParameter("member", int, OpenApiParameter.QUERY, required=False),
+            OpenApiParameter(
+                "status",
+                str,
+                OpenApiParameter.QUERY,
+                required=False,
+                enum=MembershipSubscription.Status.values,
+            ),
+            OpenApiParameter(
+                "expiring_within",
+                int,
+                OpenApiParameter.QUERY,
+                required=False,
+                description="Active subscriptions ending within this many days.",
+            ),
+        ]
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)

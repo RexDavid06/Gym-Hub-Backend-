@@ -570,9 +570,22 @@ paths:
       description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
       parameters:
       - in: query
+        name: expiring_within
+        schema:
+          type: integer
+        description: Active subscriptions ending within this many days.
+      - in: query
         name: member
         schema:
           type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - cancelled
+          - expired
       tags:
       - memberships
       security:
