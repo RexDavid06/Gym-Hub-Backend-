@@ -3,3 +3,4 @@ pytest>=8.4,<9.0
 pytest-django>=4.11,<5.0
 ruff>=0.12,<1.0
 black>=25.1,<26.0
+psycopg[binary]>=3.2,<4.0
