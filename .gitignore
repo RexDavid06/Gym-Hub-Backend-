@@ -5,3 +5,7 @@ __pycache__/
 .ruff_cache/
 *.py[cod]
 db.sqlite3
+node_modules/
+dist/
+coverage/
+.npm-install.log

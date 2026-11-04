@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from accounts.views import (
@@ -20,6 +20,7 @@ from accounts.views import (
     TrainerListView,
     UserListViewSet,
 )
+from config.views import HealthView
 from memberships.views import (
     MembershipPaymentViewSet,
     MembershipPlanViewSet,
@@ -30,6 +31,8 @@ from workouts.views import WorkoutPlanViewSet
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/health/", HealthView.as_view(), name="health"),
+    path("api/platform/", include("platform_admin.urls")),
     path("api/token/", PhoneTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", PhoneTokenRefreshView.as_view(), name="token_refresh"),
     path("api/auth/register-gym/", RegisterGymView.as_view(), name="register_gym"),
@@ -56,6 +59,11 @@ urlpatterns = [
     path("api/me/members/", MyMembersView.as_view(), name="my_members"),
     path("api/me/trainer/", MyTrainerView.as_view(), name="my_trainer"),
     path("api/users/", UserListViewSet.as_view({"get": "list"}), name="user_list"),
+    path(
+        "api/users/<int:user_id>/",
+        UserListViewSet.as_view({"get": "retrieve"}),
+        name="user_detail",
+    ),
     path(
         "api/users/<int:user_id>/deactivate/",
         DeactivateUserView.as_view(),

@@ -1,7 +1,18 @@
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from accounts.models import Invite, StaffPermission, User
+
+
+def validate_password_value(value, user=None):
+    """Run Django's password validators and report errors on the password field."""
+    try:
+        validate_password(value, user=user)
+    except ValidationError as error:
+        raise serializers.ValidationError({"password": list(error.messages)}) from error
+    return value
 
 
 class PhoneTokenSerializer(serializers.Serializer):
@@ -64,6 +75,13 @@ class RegisterGymSerializer(serializers.Serializer):
             raise serializers.ValidationError("A user with this phone number already exists.")
         return value
 
+    def validate(self, attrs):
+        validate_password_value(
+            attrs["password"],
+            user=User(phone=attrs["phone"], name=attrs["name"]),
+        )
+        return attrs
+
 
 class InviteCreateSerializer(serializers.Serializer):
     role = serializers.ChoiceField(choices=Invite.Role.choices)
@@ -105,6 +123,10 @@ class InviteListSerializer(serializers.ModelSerializer):
 class RedeemInviteSerializer(serializers.Serializer):
     code = serializers.CharField()
     password = serializers.CharField(write_only=True, trim_whitespace=False)
+
+    def validate(self, attrs):
+        validate_password_value(attrs["password"])
+        return attrs
 
 
 class RegisteredGymSerializer(serializers.Serializer):

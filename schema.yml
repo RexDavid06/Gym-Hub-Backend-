@@ -150,6 +150,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/RegisteredGym'
           description: ''
+  /api/health/:
+    get:
+      operationId: health_retrieve
+      description: 'Lightweight readiness probe: confirms the database answers a query.'
+      tags:
+      - health
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+          description: ''
   /api/invites/:
     get:
       operationId: invites_list
@@ -699,6 +726,112 @@ paths:
               schema:
                 $ref: '#/components/schemas/MembershipSubscription'
           description: ''
+  /api/platform/gyms/:
+    get:
+      operationId: platform_gym_list
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+        description: Filter by suspension state.
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Page size, default 20, maximum 100.
+      - in: query
+        name: plan_tier
+        schema:
+          type: string
+          enum:
+          - big
+          - medium
+          - small
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Case-insensitive gym name match.
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlatformGymList'
+          description: ''
+  /api/platform/gyms/{id}/:
+    get:
+      operationId: platform_gym_detail
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformGymDetail'
+          description: ''
+    patch:
+      operationId: platform_gym_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPlatformGymUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPlatformGymUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPlatformGymUpdate'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformGymDetail'
+          description: ''
+  /api/platform/summary/:
+    get:
+      operationId: platform_summary
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformSummary'
+          description: ''
   /api/token/:
     post:
       operationId: token_create
@@ -798,6 +931,27 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/users/{user_id}/:
+    get:
+      operationId: users_retrieve
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
           description: ''
   /api/users/{user_id}/deactivate/:
     post:
@@ -1326,6 +1480,27 @@ components:
       required:
       - payments
       - subscription
+    PaginatedPlatformGymList:
+      type: object
+      description: The page-number paginated shape returned by the gym list endpoint.
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformGymList'
+      required:
+      - count
+      - next
+      - previous
+      - results
     PatchedMembershipPlan:
       type: object
       properties:
@@ -1356,6 +1531,15 @@ components:
           type: string
           format: date-time
           readOnly: true
+    PatchedPlatformGymUpdate:
+      type: object
+      properties:
+        is_active:
+          type: boolean
+        plan_tier:
+          $ref: '#/components/schemas/PlanTierEnum'
+        suspension_reason:
+          type: string
     PatchedWorkoutPlan:
       type: object
       properties:
@@ -1402,6 +1586,138 @@ components:
           writeOnly: true
       required:
       - password
+      - phone
+    PlanTierEnum:
+      enum:
+      - small
+      - medium
+      - big
+      type: string
+      description: |-
+        * `small` - Small
+        * `medium` - Medium
+        * `big` - Big
+    PlatformGymDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        plan_tier:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/PlatformUserSummary'
+          nullable: true
+        member_count:
+          type: integer
+        trainer_count:
+          type: integer
+        admin_count:
+          type: integer
+        active_membership_count:
+          type: integer
+        expired_membership_count:
+          type: integer
+        suspended_at:
+          type: string
+          format: date-time
+          nullable: true
+        suspended_by:
+          allOf:
+          - $ref: '#/components/schemas/PlatformUserSummary'
+          nullable: true
+        suspension_reason:
+          type: string
+      required:
+      - active_membership_count
+      - admin_count
+      - created_at
+      - expired_membership_count
+      - id
+      - is_active
+      - member_count
+      - name
+      - owner
+      - plan_tier
+      - suspended_at
+      - suspended_by
+      - suspension_reason
+      - trainer_count
+    PlatformGymList:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        plan_tier:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/PlatformUserSummary'
+          nullable: true
+        member_count:
+          type: integer
+        trainer_count:
+          type: integer
+      required:
+      - created_at
+      - id
+      - is_active
+      - member_count
+      - name
+      - owner
+      - plan_tier
+      - trainer_count
+    PlatformSummary:
+      type: object
+      properties:
+        gyms_total:
+          type: integer
+        gyms_active:
+          type: integer
+        gyms_suspended:
+          type: integer
+        members_total:
+          type: integer
+        trainers_total:
+          type: integer
+        active_memberships:
+          type: integer
+        memberships_expiring_7_days:
+          type: integer
+      required:
+      - active_memberships
+      - gyms_active
+      - gyms_suspended
+      - gyms_total
+      - members_total
+      - memberships_expiring_7_days
+      - trainers_total
+    PlatformUserSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+      required:
+      - id
+      - name
       - phone
     RedeemInvite:
       type: object

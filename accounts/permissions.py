@@ -6,6 +6,13 @@ class IsOwner(BasePermission):
         return bool(request.user and request.user.is_authenticated and request.user.role == "owner")
 
 
+class IsSuperAdmin(BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.user and request.user.is_authenticated and request.user.role == "super_admin"
+        )
+
+
 class IsGymStaff(BasePermission):
     STAFF_ROLES = {"owner", "admin", "trainer"}
 

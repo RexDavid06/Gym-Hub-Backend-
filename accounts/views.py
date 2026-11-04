@@ -14,6 +14,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from accounts.authentication import ensure_gym_active
 from accounts.models import Invite, StaffPermission, TrainerAssignment, User
 from accounts.permissions import IsOwner
 from accounts.serializers import (
@@ -38,6 +39,7 @@ from accounts.serializers import (
 )
 from accounts.tenant import GymScopedModelViewSet
 from accounts.throttling import PhoneLoginThrottle
+from accounts.token_refresh import GymAwareTokenRefreshSerializer
 from gyms.models import Gym
 
 
@@ -50,6 +52,13 @@ class PhoneTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["role"] = user.role
         token["gym_id"] = user.gym_id
         return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        # Credentials are correct at this point, so suspension is reported as
+        # a 403 on the gym rather than as a failed login.
+        ensure_gym_active(self.user)
+        return data
 
 
 class PhoneTokenObtainPairView(TokenObtainPairView):
@@ -64,6 +73,8 @@ class PhoneTokenObtainPairView(TokenObtainPairView):
 
 
 class PhoneTokenRefreshView(TokenRefreshView):
+    serializer_class = GymAwareTokenRefreshSerializer
+
     @extend_schema(request=TokenRefreshRequestSerializer, responses=TokenRefreshResponseSerializer)
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
@@ -431,6 +442,8 @@ class UserListViewSet(GymScopedModelViewSet):
     serializer_class = UserListSerializer
     permission_classes = [IsAuthenticated]
     http_method_names = ["get", "head", "options"]
+    lookup_field = "pk"
+    lookup_url_kwarg = "user_id"
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related("trainer_assignment__trainer")
@@ -439,11 +452,11 @@ class UserListViewSet(GymScopedModelViewSet):
             pass
         elif user.role == User.Role.ADMIN:
             codes = set(user.staff_permissions.values_list("code", flat=True))
-            roles = []
-            if "manage_members" in codes:
-                roles.append(User.Role.MEMBER)
+            roles = set()
+            if "manage_members" in codes or "manage_payments" in codes:
+                roles.add(User.Role.MEMBER)
             if "manage_trainers" in codes:
-                roles.append(User.Role.TRAINER)
+                roles.add(User.Role.TRAINER)
             if not roles:
                 return queryset.none()
             queryset = queryset.filter(role__in=roles)
@@ -466,11 +479,28 @@ class UserListViewSet(GymScopedModelViewSet):
         ]
     )
     def list(self, request, *args, **kwargs):
-        if (
-            request.user.role != User.Role.OWNER
-            and not request.user.staff_permissions.filter(
-                code__in=["manage_members", "manage_trainers"]
-            ).exists()
-        ):
-            return Response({"detail": "You do not have permission to list users."}, status=403)
+        user = request.user
+        if user.role != User.Role.OWNER:
+            codes = set(user.staff_permissions.values_list("code", flat=True))
+            role = request.query_params.get("role")
+            directory_access = bool(codes & {"manage_members", "manage_trainers"})
+            payment_lookup = "manage_payments" in codes and role == User.Role.MEMBER
+            if not (directory_access or payment_lookup):
+                return Response({"detail": "You do not have permission to list users."}, status=403)
         return super().list(request, *args, **kwargs)
+
+    @extend_schema(responses=UserListSerializer)
+    def retrieve(self, request, *args, **kwargs):
+        user = request.user
+        if user.role != User.Role.OWNER:
+            codes = set(user.staff_permissions.values_list("code", flat=True))
+            if not codes & {
+                "manage_members",
+                "manage_trainers",
+                "manage_payments",
+                "assign_trainers",
+            }:
+                return Response(
+                    {"detail": "You do not have permission to view this user."}, status=403
+                )
+        return super().retrieve(request, *args, **kwargs)
