@@ -29,3 +29,29 @@ and limits key on `REMOTE_ADDR`. On Render, set `NUM_PROXIES=1` so limits key
 on the real client address rather than the proxy. A mismatch either lets a
 client forge its own identity through the header or throttles every request
 against the proxy's address.
+
+## Web dashboard
+
+The admin dashboard lives in the separate `web/` repository (React +
+TypeScript on Vite). It keeps its own copy of this backend's `schema.yml` and
+generates `src/api/schema.d.ts` from it; the shared `packages/api-client` is
+not used yet.
+
+```sh
+npm install
+npm run gen:api        # after changing the API
+npm run dev            # http://localhost:5173
+```
+
+Start the Django server first: Vite proxies `/api` to `http://127.0.0.1:8000`.
+Set `VITE_API_BASE_URL` to call a different origin.
+
+Sign in with a phone number and password, the same credentials as the API.
+Owners and admins get members, memberships and payments; an admin only sees
+the sections their staff permissions allow. A `super_admin` lands on the
+platform screens for gym summary, listing, and suspend/reactivate. The API
+enforces the same rules, so hiding a section is a convenience, never the
+security boundary.
+
+Run the web checks with `npm run lint`, `npm run typecheck`,
+`npm run test:run`, and `npm run build`.
