@@ -36,7 +36,8 @@ def register(index, ip):
         {
             "name": f"Owner {index}",
             "phone": f"+2347000000{index:03d}",
-            "password": "password123",
+            # Django's password validators run on registration (Phase 6).
+            "password": "Str0ng-Passw0rd!42",
             "gym_name": f"Gym {index}",
         },
         format="json",

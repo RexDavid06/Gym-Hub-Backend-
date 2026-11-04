@@ -34,7 +34,11 @@ def test_user_creation_by_phone():
 
 
 def test_jwt_login_and_refresh_by_phone():
-    user = User.objects.create_user(phone="+2348000000002", password="pass1234")
+    # Phase 6: a non-platform role must belong to an active gym to sign in.
+    gym = Gym.objects.create(name="Login Gym")
+    user = User.objects.create_user(
+        phone="+2348000000002", password="pass1234", gym=gym, role=User.Role.MEMBER
+    )
 
     assert authenticate(phone=user.phone, password="pass1234") == user
     client = APIClient()
