@@ -18,9 +18,11 @@ from accounts.views import (
     RedeemInviteView,
     RegisterGymView,
     TrainerListView,
+    UserBranchView,
     UserListViewSet,
 )
 from config.views import HealthView
+from gyms.views import BranchViewSet
 from memberships.views import (
     MembershipPaymentViewSet,
     MembershipPlanViewSet,
@@ -52,6 +54,23 @@ urlpatterns = [
     ),
     path("api/trainers/", TrainerListView.as_view(), name="trainer_list"),
     path(
+        "api/branches/",
+        BranchViewSet.as_view({"get": "list", "post": "create"}),
+        name="branch_list",
+    ),
+    path(
+        "api/branches/<int:pk>/",
+        BranchViewSet.as_view(
+            {
+                "get": "retrieve",
+                "put": "update",
+                "patch": "partial_update",
+                "delete": "destroy",
+            }
+        ),
+        name="branch_detail",
+    ),
+    path(
         "api/members/<int:user_id>/trainer/",
         MemberTrainerView.as_view(),
         name="member_trainer",
@@ -68,6 +87,11 @@ urlpatterns = [
         "api/users/<int:user_id>/deactivate/",
         DeactivateUserView.as_view(),
         name="user_deactivate",
+    ),
+    path(
+        "api/users/<int:user_id>/branch/",
+        UserBranchView.as_view(),
+        name="user_branch",
     ),
     path(
         "api/workout-plans/",

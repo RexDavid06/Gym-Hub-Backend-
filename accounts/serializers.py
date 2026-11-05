@@ -4,6 +4,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from accounts.models import Invite, StaffPermission, User
+from gyms.serializers import BranchSummarySerializer
 
 
 def validate_password_value(value, user=None):
@@ -49,6 +50,7 @@ class MeSerializer(serializers.Serializer):
     phone = serializers.CharField()
     role = serializers.CharField()
     gym = serializers.SerializerMethodField()
+    branch = serializers.SerializerMethodField()
     permission_codes = serializers.SerializerMethodField()
 
     @extend_schema_field(GymSummarySerializer(allow_null=True))
@@ -56,6 +58,12 @@ class MeSerializer(serializers.Serializer):
         if not user.gym_id:
             return None
         return {"id": user.gym_id, "name": user.gym.name}
+
+    @extend_schema_field(BranchSummarySerializer(allow_null=True))
+    def get_branch(self, user):
+        if not user.branch_id:
+            return None
+        return BranchSummarySerializer(user.branch).data
 
     @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_permission_codes(self, user):
@@ -148,6 +156,7 @@ class UserSummarySerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     permission_codes = serializers.SerializerMethodField()
     assigned_trainer = serializers.SerializerMethodField()
+    branch = BranchSummarySerializer(read_only=True)
 
     class Meta:
         model = User
@@ -157,6 +166,7 @@ class UserListSerializer(serializers.ModelSerializer):
             "phone",
             "role",
             "gym",
+            "branch",
             "is_active",
             "date_joined",
             "permission_codes",
@@ -181,6 +191,10 @@ class UserListSerializer(serializers.ModelSerializer):
 
 class TrainerAssignmentInputSerializer(serializers.Serializer):
     trainer_id = serializers.IntegerField(allow_null=True)
+
+
+class UserBranchInputSerializer(serializers.Serializer):
+    branch_id = serializers.IntegerField(allow_null=True)
 
 
 class MemberTrainerSerializer(serializers.Serializer):

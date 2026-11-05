@@ -34,13 +34,14 @@ from accounts.serializers import (
     TokenRefreshRequestSerializer,
     TokenRefreshResponseSerializer,
     TrainerAssignmentInputSerializer,
+    UserBranchInputSerializer,
     UserListSerializer,
     UserSummarySerializer,
 )
 from accounts.tenant import GymScopedModelViewSet
 from accounts.throttling import PhoneLoginThrottle
 from accounts.token_refresh import GymAwareTokenRefreshSerializer
-from gyms.models import Gym
+from gyms.models import Branch, Gym
 
 
 class PhoneTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -437,6 +438,51 @@ class DeactivateUserView(APIView):
         return Response(UserListSerializer(user).data)
 
 
+def can_assign_branch(actor, target):
+    if actor.role == User.Role.OWNER:
+        return True
+    if actor.role != User.Role.ADMIN:
+        return False
+    if target.role == User.Role.MEMBER:
+        return actor.staff_permissions.filter(code="manage_members").exists()
+    if target.role == User.Role.TRAINER:
+        return actor.staff_permissions.filter(code="manage_trainers").exists()
+    return False
+
+
+class UserBranchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_target(self, request, user_id):
+        from django.shortcuts import get_object_or_404
+
+        return get_object_or_404(
+            User.objects.filter(gym_id=request.user.gym_id).exclude(role=User.Role.SUPER_ADMIN),
+            pk=user_id,
+        )
+
+    @extend_schema(request=UserBranchInputSerializer, responses=UserListSerializer)
+    def put(self, request, user_id):
+        target = self.get_target(request, user_id)
+        if not can_assign_branch(request.user, target):
+            return Response({"detail": "You may not assign this user to a branch."}, status=403)
+
+        serializer = UserBranchInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        branch_id = serializer.validated_data["branch_id"]
+        branch = None
+        if branch_id is not None:
+            from django.shortcuts import get_object_or_404
+
+            branch = get_object_or_404(
+                Branch.objects.filter(gym_id=request.user.gym_id), pk=branch_id
+            )
+
+        target.branch = branch
+        target.save(update_fields=["branch"])
+        return Response(UserListSerializer(target).data)
+
+
 class UserListViewSet(GymScopedModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserListSerializer
@@ -446,7 +492,7 @@ class UserListViewSet(GymScopedModelViewSet):
     lookup_url_kwarg = "user_id"
 
     def get_queryset(self):
-        queryset = super().get_queryset().select_related("trainer_assignment__trainer")
+        queryset = super().get_queryset().select_related("branch", "trainer_assignment__trainer")
         user = self.request.user
         if user.role == User.Role.OWNER:
             pass

@@ -6,6 +6,7 @@ from rest_framework.viewsets import ViewSetMixin
 from accounts.tenant import GymScopedQuerysetMixin
 from accounts.views import UserListViewSet
 from gyms.models import Branch
+from gyms.views import BranchViewSet
 from memberships.views import (
     MembershipPaymentViewSet,
     MembershipPlanViewSet,
@@ -56,6 +57,7 @@ def test_tenancy_guard_discovers_every_tenant_viewset():
 
     assert {
         UserListViewSet,
+        BranchViewSet,
         WorkoutPlanViewSet,
         MembershipPlanViewSet,
         MembershipSubscriptionViewSet,

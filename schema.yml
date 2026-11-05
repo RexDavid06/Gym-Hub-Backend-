@@ -150,6 +150,149 @@ paths:
               schema:
                 $ref: '#/components/schemas/RegisteredGym'
           description: ''
+  /api/branches/:
+    get:
+      operationId: branches_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - branches
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Branch'
+          description: ''
+    post:
+      operationId: branches_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - branches
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Branch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Branch'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Branch'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+  /api/branches/{id}/:
+    get:
+      operationId: branches_retrieve
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - branches
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+    put:
+      operationId: branches_update
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - branches
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Branch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Branch'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Branch'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+    patch:
+      operationId: branches_partial_update
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - branches
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBranch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBranch'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBranch'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+    delete:
+      operationId: branches_destroy
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - branches
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/health/:
     get:
       operationId: health_retrieve
@@ -953,6 +1096,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserList'
           description: ''
+  /api/users/{user_id}/branch/:
+    put:
+      operationId: users_branch_update
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserBranchInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserBranchInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserBranchInput'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+          description: ''
   /api/users/{user_id}/deactivate/:
     post:
       operationId: users_deactivate_create
@@ -1123,6 +1298,32 @@ paths:
           description: No response body
 components:
   schemas:
+    Branch:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        address:
+          type: string
+      required:
+      - id
+      - name
+    BranchSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+      required:
+      - id
+      - name
     CodesEnum:
       enum:
       - manage_members
@@ -1253,12 +1454,18 @@ components:
           - $ref: '#/components/schemas/GymSummary'
           nullable: true
           readOnly: true
+        branch:
+          allOf:
+          - $ref: '#/components/schemas/BranchSummary'
+          nullable: true
+          readOnly: true
         permission_codes:
           type: array
           items:
             type: string
           readOnly: true
       required:
+      - branch
       - gym
       - id
       - name
@@ -1501,6 +1708,17 @@ components:
       - next
       - previous
       - results
+    PatchedBranch:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        address:
+          type: string
     PatchedMembershipPlan:
       type: object
       properties:
@@ -1822,6 +2040,14 @@ components:
           nullable: true
       required:
       - trainer_id
+    UserBranchInput:
+      type: object
+      properties:
+        branch_id:
+          type: integer
+          nullable: true
+      required:
+      - branch_id
     UserList:
       type: object
       properties:
@@ -1839,6 +2065,10 @@ components:
         gym:
           type: integer
           nullable: true
+        branch:
+          allOf:
+          - $ref: '#/components/schemas/BranchSummary'
+          readOnly: true
         is_active:
           type: boolean
         date_joined:
@@ -1857,6 +2087,7 @@ components:
           readOnly: true
       required:
       - assigned_trainer
+      - branch
       - date_joined
       - id
       - permission_codes
