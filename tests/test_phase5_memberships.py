@@ -568,7 +568,10 @@ def test_receipt_numbers_are_unique_per_gym():
         MembershipPayment.objects.filter(gym=second_gym).values_list("receipt_number", flat=True)
     )
 
-    assert first_numbers == ["RC-0001-00001", "RC-0001-00002"]
+    assert first_numbers == [
+        f"RC-{first_gym.pk:04d}-00001",
+        f"RC-{first_gym.pk:04d}-00002",
+    ]
     assert second_numbers == [f"RC-{second_gym.pk:04d}-00001"]
     assert len(set(first_numbers)) == 2
     constraint_names = {constraint.name for constraint in MembershipPayment._meta.constraints}
