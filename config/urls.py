@@ -29,6 +29,11 @@ from memberships.views import (
     MembershipSubscriptionViewSet,
     MyMembershipView,
 )
+from notifications.views import (
+    NotificationPreferenceView,
+    NotificationSettingView,
+    NotificationViewSet,
+)
 from workouts.views import WorkoutPlanViewSet
 
 urlpatterns = [
@@ -92,6 +97,31 @@ urlpatterns = [
         "api/users/<int:user_id>/branch/",
         UserBranchView.as_view(),
         name="user_branch",
+    ),
+    path(
+        "api/users/<int:user_id>/notification-preference/",
+        NotificationPreferenceView.as_view(),
+        name="user_notification_preference",
+    ),
+    path(
+        "api/notification-settings/",
+        NotificationSettingView.as_view(),
+        name="notification_settings",
+    ),
+    path(
+        "api/notifications/",
+        NotificationViewSet.as_view({"get": "list"}),
+        name="notification_list",
+    ),
+    path(
+        "api/notifications/<int:pk>/",
+        NotificationViewSet.as_view({"get": "retrieve"}),
+        name="notification_detail",
+    ),
+    path(
+        "api/notifications/<int:pk>/retry/",
+        NotificationViewSet.as_view({"post": "retry"}),
+        name="notification_retry",
     ),
     path(
         "api/workout-plans/",

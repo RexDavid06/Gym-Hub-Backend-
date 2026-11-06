@@ -30,6 +30,27 @@ on the real client address rather than the proxy. A mismatch either lets a
 client forge its own identity through the header or throttles every request
 against the proxy's address.
 
+## Notifications, Celery, and Redis
+
+Phase 8 adds tenant-scoped SMS and WhatsApp reminders and payment receipts.
+
+```sh
+celery -A config worker -Q default,notifications -l info
+celery -A config beat -l info
+```
+
+Development defaults to `CELERY_TASK_ALWAYS_EAGER=true`, which runs tasks inline without Redis. For a real broker and worker, set `CELERY_TASK_ALWAYS_EAGER=false` and provide `CELERY_BROKER_URL` and `CELERY_RESULT_BACKEND` (both default to local Redis). Celery Beat schedules the reminder task daily at 08:00 Africa/Lagos.
+
+Provider settings:
+
+- SMS: `SMS_PROVIDER=console` in development; production accepts `termii` (requires `TERMII_API_KEY` and `TERMII_SENDER_ID`) or `disabled`.
+- WhatsApp: `WHATSAPP_PROVIDER=console` in development; production accepts `meta` (requires `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, and the three approved template names) or `disabled`.
+- `NOTIFICATION_HTTP_TIMEOUT` bounds provider HTTP calls.
+
+Delivery semantics: notification rows move `pending → sending → sent | failed | skipped`. Transient provider failures retry up to three attempts; permanent failures are not retried automatically. `sent` means the provider accepted the message, not that the handset received it. Owners can retry failed rows from the API or web. WhatsApp is sent only to opted-in members. Suspended/inactive gyms do not send, and skipped messages are not backfilled after reactivation. Logs mask phone numbers, and provider credentials and raw responses are never returned by the API.
+
+`tests/test_phase8_redis_smoke.py` is skipped by default. CI runs it with a live Redis service and a Celery worker by setting `RUN_REDIS_SMOKE=1`.
+
 ## Web dashboard
 
 The admin dashboard lives in the separate `web/` repository (React +

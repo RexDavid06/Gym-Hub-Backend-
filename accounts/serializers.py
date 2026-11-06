@@ -7,6 +7,11 @@ from accounts.models import Invite, StaffPermission, User
 from gyms.serializers import BranchSummarySerializer
 
 
+def whatsapp_opt_in_for(user):
+    preference = getattr(user, "notification_preference", None)
+    return bool(preference and preference.whatsapp_opt_in)
+
+
 def validate_password_value(value, user=None):
     """Run Django's password validators and report errors on the password field."""
     try:
@@ -51,6 +56,7 @@ class MeSerializer(serializers.Serializer):
     role = serializers.CharField()
     gym = serializers.SerializerMethodField()
     branch = serializers.SerializerMethodField()
+    whatsapp_opt_in = serializers.SerializerMethodField()
     permission_codes = serializers.SerializerMethodField()
 
     @extend_schema_field(GymSummarySerializer(allow_null=True))
@@ -64,6 +70,10 @@ class MeSerializer(serializers.Serializer):
         if not user.branch_id:
             return None
         return BranchSummarySerializer(user.branch).data
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_whatsapp_opt_in(self, user):
+        return whatsapp_opt_in_for(user)
 
     @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_permission_codes(self, user):
@@ -156,6 +166,7 @@ class UserSummarySerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     permission_codes = serializers.SerializerMethodField()
     assigned_trainer = serializers.SerializerMethodField()
+    whatsapp_opt_in = serializers.SerializerMethodField()
     branch = BranchSummarySerializer(read_only=True)
 
     class Meta:
@@ -171,7 +182,12 @@ class UserListSerializer(serializers.ModelSerializer):
             "date_joined",
             "permission_codes",
             "assigned_trainer",
+            "whatsapp_opt_in",
         ]
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_whatsapp_opt_in(self, user):
+        return whatsapp_opt_in_for(user)
 
     @extend_schema_field(serializers.ListField(child=serializers.CharField()))
     def get_permission_codes(self, user):

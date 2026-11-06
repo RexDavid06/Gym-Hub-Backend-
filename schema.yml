@@ -869,6 +869,151 @@ paths:
               schema:
                 $ref: '#/components/schemas/MembershipSubscription'
           description: ''
+  /api/notification-settings/:
+    get:
+      operationId: notification_settings_retrieve
+      tags:
+      - notification-settings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSetting'
+          description: ''
+    patch:
+      operationId: notification_settings_partial_update
+      tags:
+      - notification-settings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationSetting'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationSetting'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationSetting'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSetting'
+          description: ''
+  /api/notifications/:
+    get:
+      operationId: notifications_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: query
+        name: channel
+        schema:
+          type: string
+          enum:
+          - sms
+          - whatsapp
+      - in: query
+        name: event
+        schema:
+          type: string
+          enum:
+          - membership_expired
+          - membership_expiring
+          - payment_receipt
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: schedule_key
+        schema:
+          type: string
+          enum:
+          - 1m
+          - 3d
+          - 3m
+          - 7d
+          - 7d_after
+          - due
+          - receipt
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - failed
+          - pending
+          - sending
+          - sent
+          - skipped
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationList'
+          description: ''
+  /api/notifications/{id}/:
+    get:
+      operationId: notifications_retrieve
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/notifications/{id}/retry/:
+    post:
+      operationId: notifications_retry_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
   /api/platform/gyms/:
     get:
       operationId: platform_gym_list
@@ -1148,6 +1293,57 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserList'
           description: ''
+  /api/users/{user_id}/notification-preference/:
+    get:
+      operationId: users_notification_preference_retrieve
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreference'
+          description: ''
+    put:
+      operationId: users_notification_preference_update
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationPreference'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NotificationPreference'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NotificationPreference'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreference'
+          description: ''
   /api/workout-plans/:
     get:
       operationId: workout_plans_list
@@ -1324,6 +1520,14 @@ components:
       required:
       - id
       - name
+    ChannelEnum:
+      enum:
+      - sms
+      - whatsapp
+      type: string
+      description: |-
+        * `sms` - SMS
+        * `whatsapp` - WhatsApp
     CodesEnum:
       enum:
       - manage_members
@@ -1338,6 +1542,16 @@ components:
         * `manage_payments` - manage_payments
         * `assign_trainers` - assign_trainers
         * `view_reports` - view_reports
+    EventEnum:
+      enum:
+      - membership_expiring
+      - membership_expired
+      - payment_receipt
+      type: string
+      description: |-
+        * `membership_expiring` - Membership expiring
+        * `membership_expired` - Membership expired
+        * `payment_receipt` - Payment receipt
     GymSummary:
       type: object
       properties:
@@ -1459,6 +1673,9 @@ components:
           - $ref: '#/components/schemas/BranchSummary'
           nullable: true
           readOnly: true
+        whatsapp_opt_in:
+          type: boolean
+          readOnly: true
         permission_codes:
           type: array
           items:
@@ -1472,6 +1689,7 @@ components:
       - permission_codes
       - phone
       - role
+      - whatsapp_opt_in
     MemberTrainer:
       type: object
       properties:
@@ -1687,6 +1905,174 @@ components:
       required:
       - payments
       - subscription
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        recipient:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          readOnly: true
+          nullable: true
+        recipient_phone:
+          type: string
+          readOnly: true
+        event:
+          allOf:
+          - $ref: '#/components/schemas/EventEnum'
+          readOnly: true
+        schedule_key:
+          allOf:
+          - $ref: '#/components/schemas/ScheduleKeyEnum'
+          readOnly: true
+        channel:
+          allOf:
+          - $ref: '#/components/schemas/ChannelEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/NotificationStatusEnum'
+          readOnly: true
+        payload:
+          readOnly: true
+        body:
+          type: string
+          readOnly: true
+        template_name:
+          type: string
+          readOnly: true
+        provider:
+          type: string
+          readOnly: true
+        provider_message_id:
+          type: string
+          readOnly: true
+        attempts:
+          type: integer
+          readOnly: true
+        last_error:
+          type: string
+          readOnly: true
+        skip_reason:
+          type: string
+          readOnly: true
+        scheduled_at:
+          type: string
+          format: date-time
+          readOnly: true
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - attempts
+      - body
+      - channel
+      - created_at
+      - event
+      - id
+      - last_error
+      - payload
+      - provider
+      - provider_message_id
+      - recipient
+      - recipient_phone
+      - schedule_key
+      - scheduled_at
+      - sent_at
+      - skip_reason
+      - status
+      - template_name
+      - updated_at
+    NotificationPreference:
+      type: object
+      properties:
+        whatsapp_opt_in:
+          type: boolean
+      required:
+      - whatsapp_opt_in
+    NotificationSetting:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sms_reminders_enabled:
+          type: boolean
+        sms_receipts_enabled:
+          type: boolean
+        whatsapp_reminders_enabled:
+          type: boolean
+        whatsapp_receipts_enabled:
+          type: boolean
+        sms_available:
+          type: boolean
+          readOnly: true
+        whatsapp_available:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - sms_available
+      - updated_at
+      - whatsapp_available
+    NotificationStatusEnum:
+      enum:
+      - pending
+      - sending
+      - sent
+      - failed
+      - skipped
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `sending` - Sending
+        * `sent` - Sent
+        * `failed` - Failed
+        * `skipped` - Skipped
+    PaginatedNotificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
     PaginatedPlatformGymList:
       type: object
       description: The page-number paginated shape returned by the gym list endpoint.
@@ -1741,6 +2127,34 @@ components:
           format: int64
         is_active:
           type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedNotificationSetting:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sms_reminders_enabled:
+          type: boolean
+        sms_receipts_enabled:
+          type: boolean
+        whatsapp_reminders_enabled:
+          type: boolean
+        whatsapp_receipts_enabled:
+          type: boolean
+        sms_available:
+          type: boolean
+          readOnly: true
+        whatsapp_available:
+          type: boolean
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -1996,6 +2410,24 @@ components:
       properties:
         plan_id:
           type: integer
+    ScheduleKeyEnum:
+      enum:
+      - 3m
+      - 1m
+      - 7d
+      - 3d
+      - due
+      - 7d_after
+      - receipt
+      type: string
+      description: |-
+        * `3m` - Three months
+        * `1m` - One month
+        * `7d` - Seven days
+        * `3d` - Three days
+        * `due` - Due date
+        * `7d_after` - Seven days after
+        * `receipt` - Receipt
     StaffPermissionSet:
       type: object
       properties:
@@ -2085,6 +2517,9 @@ components:
           - $ref: '#/components/schemas/UserSummary'
           nullable: true
           readOnly: true
+        whatsapp_opt_in:
+          type: boolean
+          readOnly: true
       required:
       - assigned_trainer
       - branch
@@ -2092,6 +2527,7 @@ components:
       - id
       - permission_codes
       - phone
+      - whatsapp_opt_in
     UserRoleEnum:
       enum:
       - super_admin

@@ -2,6 +2,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import environ
+from celery.schedules import crontab
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 env = environ.Env(DEBUG=(bool, False))
@@ -28,6 +29,7 @@ INSTALLED_APPS = [
     "accounts",
     "workouts",
     "memberships",
+    "notifications",
     "platform_admin",
 ]
 MIDDLEWARE = [
@@ -107,3 +109,46 @@ SPECTACULAR_SETTINGS = {
     },
 }
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=["http://localhost:5173"])
+
+CELERY_BROKER_URL = env(
+    "CELERY_BROKER_URL", default=env("REDIS_URL", default="redis://localhost:6379/0")
+)
+CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default="redis://localhost:6379/1")
+CELERY_TASK_ALWAYS_EAGER = env.bool("CELERY_TASK_ALWAYS_EAGER", default=False)
+CELERY_TASK_EAGER_PROPAGATES = env.bool("CELERY_TASK_EAGER_PROPAGATES", default=False)
+CELERY_TIMEZONE = "Africa/Lagos"
+CELERY_TASK_ACKS_LATE = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_TASK_REJECT_ON_WORKER_LOST = True
+CELERY_TASK_DEFAULT_QUEUE = "default"
+CELERY_TASK_ROUTES = {
+    "notifications.tasks.deliver_notification": {"queue": "notifications"},
+}
+CELERY_BEAT_SCHEDULE = {
+    "schedule-membership-reminders": {
+        "task": "notifications.tasks.schedule_membership_reminders",
+        "schedule": crontab(hour=8, minute=0),
+    }
+}
+
+SMS_PROVIDER = env("SMS_PROVIDER", default="console")
+TERMII_API_KEY = env("TERMII_API_KEY", default="")
+TERMII_SENDER_ID = env("TERMII_SENDER_ID", default="")
+TERMII_BASE_URL = env("TERMII_BASE_URL", default="https://api.ng.termii.com")
+TERMII_CHANNEL = env("TERMII_CHANNEL", default="generic")
+
+WHATSAPP_PROVIDER = env("WHATSAPP_PROVIDER", default="console")
+WHATSAPP_ACCESS_TOKEN = env("WHATSAPP_ACCESS_TOKEN", default="")
+WHATSAPP_PHONE_NUMBER_ID = env("WHATSAPP_PHONE_NUMBER_ID", default="")
+WHATSAPP_API_VERSION = env("WHATSAPP_API_VERSION", default="v20.0")
+WHATSAPP_TEMPLATE_LANGUAGE = env("WHATSAPP_TEMPLATE_LANGUAGE", default="en_US")
+WHATSAPP_TEMPLATE_MEMBERSHIP_REMINDER = env(
+    "WHATSAPP_TEMPLATE_MEMBERSHIP_REMINDER", default="membership_reminder"
+)
+WHATSAPP_TEMPLATE_MEMBERSHIP_EXPIRED = env(
+    "WHATSAPP_TEMPLATE_MEMBERSHIP_EXPIRED", default="membership_expired"
+)
+WHATSAPP_TEMPLATE_PAYMENT_RECEIPT = env(
+    "WHATSAPP_TEMPLATE_PAYMENT_RECEIPT", default="payment_receipt"
+)
+NOTIFICATION_HTTP_TIMEOUT = env.int("NOTIFICATION_HTTP_TIMEOUT", default=10)

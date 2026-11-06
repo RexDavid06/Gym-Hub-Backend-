@@ -50,3 +50,38 @@ def test_prod_settings_start_with_secret_and_postgres_url():
     )
 
     assert result.returncode == 0, result.stderr
+
+
+def test_prod_settings_refuse_to_start_without_a_celery_broker():
+    result = load_prod_settings(
+        DJANGO_SECRET_KEY="a-real-secret-for-the-test",
+        DATABASE_URL="postgres://user:pass@localhost:5432/gymhub",
+        CELERY_BROKER_URL="",
+    )
+
+    assert result.returncode != 0
+    assert "CELERY_BROKER_URL must be set" in result.stderr
+
+
+def test_prod_settings_refuse_console_notification_providers():
+    result = load_prod_settings(
+        DJANGO_SECRET_KEY="a-real-secret-for-the-test",
+        DATABASE_URL="postgres://user:pass@localhost:5432/gymhub",
+        SMS_PROVIDER="console",
+    )
+
+    assert result.returncode != 0
+    assert "Production SMS provider must be termii or disabled" in result.stderr
+
+
+def test_prod_settings_refuse_incomplete_termii_configuration():
+    result = load_prod_settings(
+        DJANGO_SECRET_KEY="a-real-secret-for-the-test",
+        DATABASE_URL="postgres://user:pass@localhost:5432/gymhub",
+        SMS_PROVIDER="termii",
+        TERMII_API_KEY="",
+        TERMII_SENDER_ID="",
+    )
+
+    assert result.returncode != 0
+    assert "Termii credentials must be set" in result.stderr

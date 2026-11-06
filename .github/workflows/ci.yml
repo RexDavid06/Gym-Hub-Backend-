@@ -20,6 +20,37 @@ jobs:
       - run: ruff check .
       - run: black --check .
 
+  redis-smoke:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      CELERY_BROKER_URL: redis://localhost:6379/0
+      CELERY_RESULT_BACKEND: redis://localhost:6379/1
+      CELERY_TASK_ALWAYS_EAGER: "false"
+      CELERY_TASK_EAGER_PROPAGATES: "false"
+      RUN_REDIS_SMOKE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements/dev.txt
+      - run: pip install -r requirements/dev.txt
+      - run: |
+          celery -A config worker -Q default,notifications -l warning --pool=solo &
+          sleep 5
+          pytest tests/test_phase8_redis_smoke.py -q
+
   postgres:
     runs-on: ubuntu-latest
     services:

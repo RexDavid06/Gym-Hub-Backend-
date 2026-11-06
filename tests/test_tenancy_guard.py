@@ -12,6 +12,7 @@ from memberships.views import (
     MembershipPlanViewSet,
     MembershipSubscriptionViewSet,
 )
+from notifications.views import NotificationViewSet
 from workouts.views import WorkoutPlanViewSet
 
 
@@ -62,6 +63,7 @@ def test_tenancy_guard_discovers_every_tenant_viewset():
         MembershipPlanViewSet,
         MembershipSubscriptionViewSet,
         MembershipPaymentViewSet,
+        NotificationViewSet,
     } <= found
 
 
@@ -82,3 +84,7 @@ def test_tenancy_guard_rejects_a_viewset_that_does_not_scope():
 
     assert scopes_by_gym(LeakyBranchViewSet) is False
     assert scopes_by_gym(ScopedBranchViewSet) is True
+
+
+def test_notification_viewset_is_gym_scoped():
+    assert scopes_by_gym(NotificationViewSet) is True

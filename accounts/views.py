@@ -492,7 +492,11 @@ class UserListViewSet(GymScopedModelViewSet):
     lookup_url_kwarg = "user_id"
 
     def get_queryset(self):
-        queryset = super().get_queryset().select_related("branch", "trainer_assignment__trainer")
+        queryset = (
+            super()
+            .get_queryset()
+            .select_related("branch", "trainer_assignment__trainer", "notification_preference")
+        )
         user = self.request.user
         if user.role == User.Role.OWNER:
             pass
