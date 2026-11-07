@@ -1,0 +1,2655 @@
+openapi: 3.0.3
+info:
+  title: Gym Management API
+  version: 0.1.0
+  description: Foundation API for the Gym Management SaaS.
+paths:
+  /api/admins/:
+    get:
+      operationId: admins_list
+      tags:
+      - admins
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/admins/{user_id}/permissions/:
+    put:
+      operationId: admin_permissions_set
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admins
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffPermissionSet'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffPermissionSet'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffPermissionSet'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/admins/{user_id}/permissions/{code}/:
+    delete:
+      operationId: admin_permissions_revoke
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - admins
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: Revoke a refresh token so it can no longer be rotated or exchanged.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Logout'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Logout'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Logout'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/auth/redeem-invite/:
+    post:
+      operationId: auth_redeem_invite_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RedeemInvite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RedeemInvite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RedeemInvite'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedeemInviteResponse'
+          description: ''
+  /api/auth/register-gym/:
+    post:
+      operationId: auth_register_gym_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterGym'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterGym'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterGym'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisteredGym'
+          description: ''
+  /api/branches/:
+    get:
+      operationId: branches_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - branches
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Branch'
+          description: ''
+    post:
+      operationId: branches_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - branches
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Branch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Branch'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Branch'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+  /api/branches/{id}/:
+    get:
+      operationId: branches_retrieve
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - branches
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+    put:
+      operationId: branches_update
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - branches
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Branch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Branch'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Branch'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+    patch:
+      operationId: branches_partial_update
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - branches
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBranch'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBranch'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBranch'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+          description: ''
+    delete:
+      operationId: branches_destroy
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - branches
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/health/:
+    get:
+      operationId: health_retrieve
+      description: 'Lightweight readiness probe: confirms the database answers a query.'
+      tags:
+      - health
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+          description: ''
+        '503':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+          description: ''
+  /api/invites/:
+    get:
+      operationId: invites_list
+      tags:
+      - invites
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InviteList'
+          description: ''
+    post:
+      operationId: invites_create
+      tags:
+      - invites
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InviteCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InviteCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteCreated'
+          description: ''
+  /api/me/:
+    get:
+      operationId: me_retrieve
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Me'
+          description: ''
+  /api/me/members/:
+    get:
+      operationId: me_members_list
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/me/membership/:
+    get:
+      operationId: me_membership_retrieve
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyMembership'
+          description: ''
+  /api/me/trainer/:
+    get:
+      operationId: me_trainer_retrieve
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberTrainer'
+          description: ''
+  /api/members/{user_id}/trainer/:
+    get:
+      operationId: members_trainer_retrieve
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - members
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberTrainer'
+          description: ''
+    put:
+      operationId: members_trainer_update
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - members
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainerAssignmentInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TrainerAssignmentInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TrainerAssignmentInput'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberTrainer'
+          description: ''
+    delete:
+      operationId: members_trainer_destroy
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - members
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/membership-payments/:
+    get:
+      operationId: membership_payments_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: query
+        name: member
+        schema:
+          type: integer
+      - in: query
+        name: subscription
+        schema:
+          type: integer
+      tags:
+      - membership-payments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MembershipPayment'
+          description: ''
+    post:
+      operationId: membership_payments_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - membership-payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipPayment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MembershipPayment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MembershipPayment'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPayment'
+          description: ''
+  /api/membership-payments/{id}/:
+    get:
+      operationId: membership_payments_retrieve
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - membership-payments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPayment'
+          description: ''
+  /api/membership-payments/{id}/void/:
+    post:
+      operationId: membership_payments_void_create
+      description: Void a payment. Payments are never edited or deleted.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - membership-payments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoidPayment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VoidPayment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VoidPayment'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPayment'
+          description: ''
+  /api/membership-plans/:
+    get:
+      operationId: membership_plans_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - membership-plans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MembershipPlan'
+          description: ''
+    post:
+      operationId: membership_plans_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - membership-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MembershipPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MembershipPlan'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPlan'
+          description: ''
+  /api/membership-plans/{id}/:
+    get:
+      operationId: membership_plans_retrieve
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - membership-plans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPlan'
+          description: ''
+    put:
+      operationId: membership_plans_update
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - membership-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MembershipPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MembershipPlan'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPlan'
+          description: ''
+    patch:
+      operationId: membership_plans_partial_update
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - membership-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMembershipPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMembershipPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMembershipPlan'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPlan'
+          description: ''
+    delete:
+      operationId: membership_plans_destroy
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - membership-plans
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/memberships/:
+    get:
+      operationId: memberships_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: query
+        name: expiring_within
+        schema:
+          type: integer
+        description: Active subscriptions ending within this many days.
+      - in: query
+        name: member
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - cancelled
+          - expired
+      tags:
+      - memberships
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MembershipSubscription'
+          description: ''
+    post:
+      operationId: memberships_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - memberships
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipSubscription'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MembershipSubscription'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MembershipSubscription'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipSubscription'
+          description: ''
+  /api/memberships/{id}/:
+    get:
+      operationId: memberships_retrieve
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - memberships
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipSubscription'
+          description: ''
+  /api/memberships/{id}/cancel/:
+    post:
+      operationId: memberships_cancel_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - memberships
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipSubscription'
+          description: ''
+  /api/memberships/{id}/renew/:
+    post:
+      operationId: memberships_renew_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - memberships
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenewMembership'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RenewMembership'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RenewMembership'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipSubscription'
+          description: ''
+  /api/notification-settings/:
+    get:
+      operationId: notification_settings_retrieve
+      tags:
+      - notification-settings
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSetting'
+          description: ''
+    patch:
+      operationId: notification_settings_partial_update
+      tags:
+      - notification-settings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationSetting'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationSetting'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationSetting'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSetting'
+          description: ''
+  /api/notifications/:
+    get:
+      operationId: notifications_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: query
+        name: channel
+        schema:
+          type: string
+          enum:
+          - sms
+          - whatsapp
+      - in: query
+        name: event
+        schema:
+          type: string
+          enum:
+          - membership_expired
+          - membership_expiring
+          - payment_receipt
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: schedule_key
+        schema:
+          type: string
+          enum:
+          - 1m
+          - 3d
+          - 3m
+          - 7d
+          - 7d_after
+          - due
+          - receipt
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - failed
+          - pending
+          - sending
+          - sent
+          - skipped
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationList'
+          description: ''
+  /api/notifications/{id}/:
+    get:
+      operationId: notifications_retrieve
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/notifications/{id}/retry/:
+    post:
+      operationId: notifications_retry_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/platform/gyms/:
+    get:
+      operationId: platform_gym_list
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+        description: Filter by suspension state.
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Page size, default 20, maximum 100.
+      - in: query
+        name: plan_tier
+        schema:
+          type: string
+          enum:
+          - big
+          - medium
+          - small
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Case-insensitive gym name match.
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlatformGymList'
+          description: ''
+  /api/platform/gyms/{id}/:
+    get:
+      operationId: platform_gym_detail
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformGymDetail'
+          description: ''
+    patch:
+      operationId: platform_gym_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPlatformGymUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPlatformGymUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPlatformGymUpdate'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformGymDetail'
+          description: ''
+  /api/platform/summary/:
+    get:
+      operationId: platform_summary
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformSummary'
+          description: ''
+  /api/token/:
+    post:
+      operationId: token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PhoneToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PhoneToken'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+          description: ''
+  /api/token/refresh/:
+    post:
+      operationId: token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefreshResponse'
+          description: ''
+  /api/trainers/:
+    get:
+      operationId: trainers_list
+      tags:
+      - trainers
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserSummary'
+          description: ''
+  /api/users/:
+    get:
+      operationId: users_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: query
+        name: role
+        schema:
+          type: string
+          enum:
+          - admin
+          - member
+          - owner
+          - super_admin
+          - trainer
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/users/{user_id}/:
+    get:
+      operationId: users_retrieve
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/users/{user_id}/branch/:
+    put:
+      operationId: users_branch_update
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserBranchInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserBranchInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserBranchInput'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/users/{user_id}/deactivate/:
+    post:
+      operationId: users_deactivate_create
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserList'
+          description: ''
+  /api/users/{user_id}/notification-preference/:
+    get:
+      operationId: users_notification_preference_retrieve
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreference'
+          description: ''
+    put:
+      operationId: users_notification_preference_update
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationPreference'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NotificationPreference'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NotificationPreference'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreference'
+          description: ''
+  /api/workout-plans/:
+    get:
+      operationId: workout_plans_list
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: query
+        name: member
+        schema:
+          type: integer
+      tags:
+      - workout-plans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkoutPlan'
+          description: ''
+    post:
+      operationId: workout_plans_create
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      tags:
+      - workout-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkoutPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WorkoutPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WorkoutPlan'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutPlan'
+          description: ''
+  /api/workout-plans/{id}/:
+    get:
+      operationId: workout_plans_retrieve
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - workout-plans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutPlan'
+          description: ''
+    put:
+      operationId: workout_plans_update
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - workout-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkoutPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WorkoutPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WorkoutPlan'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutPlan'
+          description: ''
+    patch:
+      operationId: workout_plans_partial_update
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - workout-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkoutPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkoutPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkoutPlan'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutPlan'
+          description: ''
+    delete:
+      operationId: workout_plans_destroy
+      description: Base viewset for tenant-owned models; subclasses inherit gym filtering.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - workout-plans
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    Branch:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        address:
+          type: string
+      required:
+      - id
+      - name
+    BranchSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+      required:
+      - id
+      - name
+    ChannelEnum:
+      enum:
+      - sms
+      - whatsapp
+      type: string
+      description: |-
+        * `sms` - SMS
+        * `whatsapp` - WhatsApp
+    CodesEnum:
+      enum:
+      - manage_members
+      - manage_trainers
+      - manage_payments
+      - assign_trainers
+      - view_reports
+      type: string
+      description: |-
+        * `manage_members` - manage_members
+        * `manage_trainers` - manage_trainers
+        * `manage_payments` - manage_payments
+        * `assign_trainers` - assign_trainers
+        * `view_reports` - view_reports
+    EventEnum:
+      enum:
+      - membership_expiring
+      - membership_expired
+      - payment_receipt
+      type: string
+      description: |-
+        * `membership_expiring` - Membership expiring
+        * `membership_expired` - Membership expired
+        * `payment_receipt` - Payment receipt
+    GymSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+      - id
+      - name
+    InviteCreate:
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/InviteRoleEnum'
+        phone:
+          type: string
+          maxLength: 32
+        name:
+          type: string
+          maxLength: 200
+      required:
+      - name
+      - phone
+      - role
+    InviteCreated:
+      type: object
+      properties:
+        id:
+          type: integer
+        role:
+          type: string
+        phone:
+          type: string
+        name:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        code:
+          type: string
+      required:
+      - code
+      - expires_at
+      - id
+      - name
+      - phone
+      - role
+    InviteList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        role:
+          $ref: '#/components/schemas/InviteRoleEnum'
+        phone:
+          type: string
+          maxLength: 32
+        name:
+          type: string
+          maxLength: 200
+        expires_at:
+          type: string
+          format: date-time
+        used_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        created_by:
+          type: integer
+          readOnly: true
+      required:
+      - created_at
+      - created_by
+      - id
+      - name
+      - phone
+      - role
+    InviteRoleEnum:
+      enum:
+      - admin
+      - trainer
+      - member
+      type: string
+      description: |-
+        * `admin` - Admin
+        * `trainer` - Trainer
+        * `member` - Member
+    Logout:
+      type: object
+      properties:
+        refresh:
+          type: string
+      required:
+      - refresh
+    Me:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+        gym:
+          allOf:
+          - $ref: '#/components/schemas/GymSummary'
+          nullable: true
+          readOnly: true
+        branch:
+          allOf:
+          - $ref: '#/components/schemas/BranchSummary'
+          nullable: true
+          readOnly: true
+        whatsapp_opt_in:
+          type: boolean
+          readOnly: true
+        permission_codes:
+          type: array
+          items:
+            type: string
+          readOnly: true
+      required:
+      - branch
+      - gym
+      - id
+      - name
+      - permission_codes
+      - phone
+      - role
+      - whatsapp_opt_in
+    MemberTrainer:
+      type: object
+      properties:
+        member:
+          $ref: '#/components/schemas/UserSummary'
+        trainer:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          nullable: true
+      required:
+      - member
+      - trainer
+    MembershipPayment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        member:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          readOnly: true
+        member_id:
+          type: integer
+          writeOnly: true
+        subscription:
+          type: integer
+          readOnly: true
+        subscription_id:
+          type: integer
+          writeOnly: true
+          nullable: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        method:
+          $ref: '#/components/schemas/MethodEnum'
+        reference:
+          type: string
+          maxLength: 100
+        paid_at:
+          type: string
+          format: date
+        notes:
+          type: string
+        receipt_number:
+          type: string
+          readOnly: true
+        recorded_by:
+          type: integer
+          readOnly: true
+        voided_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        voided_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        void_reason:
+          type: string
+          readOnly: true
+        is_voided:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - is_voided
+      - member
+      - member_id
+      - receipt_number
+      - recorded_by
+      - subscription
+      - void_reason
+      - voided_at
+      - voided_by
+    MembershipPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        duration_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - duration_days
+      - id
+      - name
+      - price
+      - updated_at
+    MembershipSubscription:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        member:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          readOnly: true
+        member_id:
+          type: integer
+          writeOnly: true
+        plan:
+          allOf:
+          - $ref: '#/components/schemas/MembershipPlan'
+          readOnly: true
+        plan_id:
+          type: integer
+          writeOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/MembershipSubscriptionStatusEnum'
+          readOnly: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          readOnly: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        days_left:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - days_left
+      - end_date
+      - id
+      - member
+      - member_id
+      - plan
+      - plan_id
+      - price
+      - status
+      - updated_at
+    MembershipSubscriptionStatusEnum:
+      enum:
+      - active
+      - expired
+      - cancelled
+      type: string
+      description: |-
+        * `active` - Active
+        * `expired` - Expired
+        * `cancelled` - Cancelled
+    MethodEnum:
+      enum:
+      - cash
+      - transfer
+      - pos
+      - other
+      type: string
+      description: |-
+        * `cash` - Cash
+        * `transfer` - Bank transfer
+        * `pos` - POS
+        * `other` - Other
+    MyMembership:
+      type: object
+      properties:
+        subscription:
+          allOf:
+          - $ref: '#/components/schemas/MembershipSubscription'
+          nullable: true
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/MembershipPayment'
+      required:
+      - payments
+      - subscription
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        recipient:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          readOnly: true
+          nullable: true
+        recipient_phone:
+          type: string
+          readOnly: true
+        event:
+          allOf:
+          - $ref: '#/components/schemas/EventEnum'
+          readOnly: true
+        schedule_key:
+          allOf:
+          - $ref: '#/components/schemas/ScheduleKeyEnum'
+          readOnly: true
+        channel:
+          allOf:
+          - $ref: '#/components/schemas/ChannelEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/NotificationStatusEnum'
+          readOnly: true
+        payload:
+          readOnly: true
+        body:
+          type: string
+          readOnly: true
+        template_name:
+          type: string
+          readOnly: true
+        provider:
+          type: string
+          readOnly: true
+        provider_message_id:
+          type: string
+          readOnly: true
+        attempts:
+          type: integer
+          readOnly: true
+        last_error:
+          type: string
+          readOnly: true
+        skip_reason:
+          type: string
+          readOnly: true
+        scheduled_at:
+          type: string
+          format: date-time
+          readOnly: true
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - attempts
+      - body
+      - channel
+      - created_at
+      - event
+      - id
+      - last_error
+      - payload
+      - provider
+      - provider_message_id
+      - recipient
+      - recipient_phone
+      - schedule_key
+      - scheduled_at
+      - sent_at
+      - skip_reason
+      - status
+      - template_name
+      - updated_at
+    NotificationPreference:
+      type: object
+      properties:
+        whatsapp_opt_in:
+          type: boolean
+      required:
+      - whatsapp_opt_in
+    NotificationSetting:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sms_reminders_enabled:
+          type: boolean
+        sms_receipts_enabled:
+          type: boolean
+        whatsapp_reminders_enabled:
+          type: boolean
+        whatsapp_receipts_enabled:
+          type: boolean
+        sms_available:
+          type: boolean
+          readOnly: true
+        whatsapp_available:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - sms_available
+      - updated_at
+      - whatsapp_available
+    NotificationStatusEnum:
+      enum:
+      - pending
+      - sending
+      - sent
+      - failed
+      - skipped
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `sending` - Sending
+        * `sent` - Sent
+        * `failed` - Failed
+        * `skipped` - Skipped
+    PaginatedNotificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    PaginatedPlatformGymList:
+      type: object
+      description: The page-number paginated shape returned by the gym list endpoint.
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformGymList'
+      required:
+      - count
+      - next
+      - previous
+      - results
+    PatchedBranch:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        address:
+          type: string
+    PatchedMembershipPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        duration_days:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedNotificationSetting:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sms_reminders_enabled:
+          type: boolean
+        sms_receipts_enabled:
+          type: boolean
+        whatsapp_reminders_enabled:
+          type: boolean
+        whatsapp_receipts_enabled:
+          type: boolean
+        sms_available:
+          type: boolean
+          readOnly: true
+        whatsapp_available:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedPlatformGymUpdate:
+      type: object
+      properties:
+        is_active:
+          type: boolean
+        plan_tier:
+          $ref: '#/components/schemas/PlanTierEnum'
+        suspension_reason:
+          type: string
+    PatchedWorkoutPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        member:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          readOnly: true
+        member_id:
+          type: integer
+          writeOnly: true
+        trainer:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        notes:
+          type: string
+        status:
+          $ref: '#/components/schemas/WorkoutPlanStatusEnum'
+        exercises:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkoutExercise'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PhoneToken:
+      type: object
+      properties:
+        phone:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - phone
+    PlanTierEnum:
+      enum:
+      - small
+      - medium
+      - big
+      type: string
+      description: |-
+        * `small` - Small
+        * `medium` - Medium
+        * `big` - Big
+    PlatformGymDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        plan_tier:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/PlatformUserSummary'
+          nullable: true
+        member_count:
+          type: integer
+        trainer_count:
+          type: integer
+        admin_count:
+          type: integer
+        active_membership_count:
+          type: integer
+        expired_membership_count:
+          type: integer
+        suspended_at:
+          type: string
+          format: date-time
+          nullable: true
+        suspended_by:
+          allOf:
+          - $ref: '#/components/schemas/PlatformUserSummary'
+          nullable: true
+        suspension_reason:
+          type: string
+      required:
+      - active_membership_count
+      - admin_count
+      - created_at
+      - expired_membership_count
+      - id
+      - is_active
+      - member_count
+      - name
+      - owner
+      - plan_tier
+      - suspended_at
+      - suspended_by
+      - suspension_reason
+      - trainer_count
+    PlatformGymList:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        plan_tier:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        owner:
+          allOf:
+          - $ref: '#/components/schemas/PlatformUserSummary'
+          nullable: true
+        member_count:
+          type: integer
+        trainer_count:
+          type: integer
+      required:
+      - created_at
+      - id
+      - is_active
+      - member_count
+      - name
+      - owner
+      - plan_tier
+      - trainer_count
+    PlatformSummary:
+      type: object
+      properties:
+        gyms_total:
+          type: integer
+        gyms_active:
+          type: integer
+        gyms_suspended:
+          type: integer
+        members_total:
+          type: integer
+        trainers_total:
+          type: integer
+        active_memberships:
+          type: integer
+        memberships_expiring_7_days:
+          type: integer
+      required:
+      - active_memberships
+      - gyms_active
+      - gyms_suspended
+      - gyms_total
+      - members_total
+      - memberships_expiring_7_days
+      - trainers_total
+    PlatformUserSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+      required:
+      - id
+      - name
+      - phone
+    RedeemInvite:
+      type: object
+      properties:
+        code:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - code
+      - password
+    RedeemInviteResponse:
+      type: object
+      properties:
+        refresh:
+          type: string
+        access:
+          type: string
+      required:
+      - access
+      - refresh
+    RegisterGym:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        phone:
+          type: string
+          maxLength: 32
+        password:
+          type: string
+          writeOnly: true
+        gym_name:
+          type: string
+          maxLength: 200
+      required:
+      - gym_name
+      - name
+      - password
+      - phone
+    RegisteredGym:
+      type: object
+      properties:
+        gym_id:
+          type: integer
+        user_id:
+          type: integer
+        role:
+          type: string
+      required:
+      - gym_id
+      - role
+      - user_id
+    RenewMembership:
+      type: object
+      properties:
+        plan_id:
+          type: integer
+    ScheduleKeyEnum:
+      enum:
+      - 3m
+      - 1m
+      - 7d
+      - 3d
+      - due
+      - 7d_after
+      - receipt
+      type: string
+      description: |-
+        * `3m` - Three months
+        * `1m` - One month
+        * `7d` - Seven days
+        * `3d` - Three days
+        * `due` - Due date
+        * `7d_after` - Seven days after
+        * `receipt` - Receipt
+    StaffPermissionSet:
+      type: object
+      properties:
+        codes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CodesEnum'
+      required:
+      - codes
+    TokenPair:
+      type: object
+      properties:
+        refresh:
+          type: string
+        access:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - refresh
+    TokenRefreshResponse:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+      required:
+      - access
+    TrainerAssignmentInput:
+      type: object
+      properties:
+        trainer_id:
+          type: integer
+          nullable: true
+      required:
+      - trainer_id
+    UserBranchInput:
+      type: object
+      properties:
+        branch_id:
+          type: integer
+          nullable: true
+      required:
+      - branch_id
+    UserList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        phone:
+          type: string
+          maxLength: 32
+        role:
+          $ref: '#/components/schemas/UserRoleEnum'
+        gym:
+          type: integer
+          nullable: true
+        branch:
+          allOf:
+          - $ref: '#/components/schemas/BranchSummary'
+          readOnly: true
+        is_active:
+          type: boolean
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+        permission_codes:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        assigned_trainer:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          nullable: true
+          readOnly: true
+        whatsapp_opt_in:
+          type: boolean
+          readOnly: true
+      required:
+      - assigned_trainer
+      - branch
+      - date_joined
+      - id
+      - permission_codes
+      - phone
+      - whatsapp_opt_in
+    UserRoleEnum:
+      enum:
+      - super_admin
+      - owner
+      - admin
+      - trainer
+      - member
+      type: string
+      description: |-
+        * `super_admin` - Super admin
+        * `owner` - Owner
+        * `admin` - Admin
+        * `trainer` - Trainer
+        * `member` - Member
+    UserSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        phone:
+          type: string
+          maxLength: 32
+      required:
+      - id
+      - phone
+    VoidPayment:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+      required:
+      - reason
+    WorkoutExercise:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        sets:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        reps:
+          type: string
+          maxLength: 50
+        weight:
+          type: string
+          maxLength: 50
+        notes:
+          type: string
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+      required:
+      - id
+      - name
+    WorkoutPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        member:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          readOnly: true
+        member_id:
+          type: integer
+          writeOnly: true
+        trainer:
+          allOf:
+          - $ref: '#/components/schemas/UserSummary'
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        notes:
+          type: string
+        status:
+          $ref: '#/components/schemas/WorkoutPlanStatusEnum'
+        exercises:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkoutExercise'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - member
+      - title
+      - trainer
+      - updated_at
+    WorkoutPlanStatusEnum:
+      enum:
+      - draft
+      - active
+      - archived
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `active` - Active
+        * `archived` - Archived
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,31 @@
+{
+  "name": "@gym-hub/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "schema.yml"],
+  "scripts": {
+    "gen:api": "openapi-typescript ./schema.yml -o src/schema.d.ts",
+    "build": "tsc -p tsconfig.json && cp src/schema.d.ts dist/schema.d.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.19.0",
+    "eslint": "^9.19.0",
+    "globals": "^15.14.0",
+    "openapi-typescript": "^7.13.0",
+    "typescript": "~5.7.3",
+    "typescript-eslint": "^8.24.0",
+    "vitest": "^5.1.0"
+  }
+}

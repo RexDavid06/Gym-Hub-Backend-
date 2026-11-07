@@ -51,16 +51,34 @@ Delivery semantics: notification rows move `pending → sending → sent | faile
 
 `tests/test_phase8_redis_smoke.py` is skipped by default. CI runs it with a live Redis service and a Celery worker by setting `RUN_REDIS_SMOKE=1`.
 
-## Web dashboard
+## Shared API client and web dashboard
 
 The admin dashboard lives in the separate `web/` repository (React +
-TypeScript on Vite). It keeps its own copy of this backend's `schema.yml` and
-generates `src/api/schema.d.ts` from it; the shared `packages/api-client` is
-not used yet.
+TypeScript on Vite). This backend repository also hosts the canonical
+`@gym-hub/api-client` package in `api-client/`. The backend is the source of
+truth for `schema.yml`; the package generates its TypeScript schema from that
+file, and web and mobile consume the package.
+
+After an API change, regenerate the schema and the package types:
+
+```sh
+python manage.py spectacular --file schema.yml --validate
+cp schema.yml api-client/schema.yml
+npm --prefix api-client run gen:api
+```
+
+Build the package before typechecking, testing, or building web or mobile.
+Each app's CI stages the package from this repository and builds it first.
+
+```sh
+npm --prefix api-client ci
+npm --prefix api-client run build
+```
+
+From the web repository:
 
 ```sh
 npm install
-npm run gen:api        # after changing the API
 npm run dev            # http://localhost:5173
 ```
 
