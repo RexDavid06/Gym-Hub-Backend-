@@ -94,3 +94,46 @@ security boundary.
 
 Run the web checks with `npm run lint`, `npm run typecheck`,
 `npm run test:run`, and `npm run build`.
+
+## Deploying to Render
+
+The repository root contains a `render.yaml` Blueprint. Deploy it from the
+backend repository in the Render Dashboard (New → Blueprint). It provisions:
+
+- a Django web service running Gunicorn, with `/api/health/` as the health check;
+- a Celery worker on the `default,notifications` queues and a Celery beat scheduler;
+- Render Postgres and Render Key Value (Redis);
+- the static web dashboard from the `Gym-Hub-Frontend` repository.
+
+The Blueprint uses paid `0.5c-512mb` service plans and a `basic-256mb` database.
+Free web services sleep and free Postgres instances expire, so they are not
+production-safe.
+
+The web service runs migrations with `preDeployCommand`, serves Django admin
+static files through WhiteNoise, and trusts Render's proxy headers. Production
+settings fail fast when `DJANGO_SECRET_KEY`, `DATABASE_URL`, or
+`CELERY_BROKER_URL` is missing.
+
+After the first deploy:
+
+1. If Render had to append a suffix to the `gym-hub-web` name, update
+   `CORS_ALLOWED_ORIGINS` on the API service to the actual dashboard origin.
+2. For custom domains, add them to `DJANGO_ALLOWED_HOSTS` and
+   `CSRF_TRUSTED_ORIGINS` on the API service.
+3. Create the first platform superuser from the Render shell:
+   `python manage.py createsuperuser`.
+4. Enable SMS or WhatsApp by overriding `SMS_PROVIDER` / `WHATSAPP_PROVIDER`
+   and setting the provider credentials from the dashboard.
+
+If the API client schema changes, update `API_CLIENT_REF` on the static site to
+the backend branch or tag that contains the matching `api-client` package.
+
+To run the production build locally against a PostgreSQL URL:
+
+```sh
+DJANGO_SETTINGS_MODULE=config.settings.prod \
+DJANGO_SECRET_KEY=replace-me \
+DATABASE_URL=postgres://user:pass@localhost:5432/gymhub \
+CELERY_BROKER_URL=redis://localhost:6379/0 \
+bash build.sh
+```

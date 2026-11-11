@@ -73,6 +73,7 @@ TIME_ZONE = "Africa/Lagos"
 USE_I18N = True
 USE_TZ = True
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
@@ -113,7 +114,9 @@ CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=["http://localho
 CELERY_BROKER_URL = env(
     "CELERY_BROKER_URL", default=env("REDIS_URL", default="redis://localhost:6379/0")
 )
-CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default="redis://localhost:6379/1")
+CELERY_RESULT_BACKEND = env(
+    "CELERY_RESULT_BACKEND", default=env("REDIS_URL", default="redis://localhost:6379/1")
+)
 CELERY_TASK_ALWAYS_EAGER = env.bool("CELERY_TASK_ALWAYS_EAGER", default=False)
 CELERY_TASK_EAGER_PROPAGATES = env.bool("CELERY_TASK_EAGER_PROPAGATES", default=False)
 CELERY_TIMEZONE = "Africa/Lagos"

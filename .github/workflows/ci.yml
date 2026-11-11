@@ -17,6 +17,8 @@ jobs:
       - run: python manage.py makemigrations --check --dry-run
       - run: python manage.py spectacular --file /tmp/schema.yml --validate
       - run: diff -u schema.yml /tmp/schema.yml
+      - name: Validate the Render blueprint
+        run: python -c "import yaml; yaml.safe_load(open('render.yaml'))"
       - run: pytest
       - run: ruff check .
       - run: black --check .
@@ -108,4 +110,14 @@ jobs:
           cache: pip
           cache-dependency-path: requirements/dev.txt
       - run: pip install -r requirements/dev.txt
+      - name: Production settings and static files
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.prod
+          DJANGO_SECRET_KEY: ci-only-secret-key-not-for-production-0123456789abcdef
+          CELERY_BROKER_URL: redis://localhost:6379/0
+          CELERY_RESULT_BACKEND: redis://localhost:6379/1
+          RENDER_EXTERNAL_HOSTNAME: gym-hub-api.onrender.com
+        run: |
+          python manage.py check --deploy
+          python manage.py collectstatic --noinput
       - run: pytest

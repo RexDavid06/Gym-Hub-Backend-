@@ -1,0 +1,179 @@
+# Render Blueprint for Gym Hub.
+#
+# Deploy this Blueprint from the backend repository. It provisions:
+#   - the Django API
+#   - a Celery worker and Celery beat
+#   - Render Postgres and Render Key Value (Redis)
+#   - the static web dashboard from the frontend repository
+#
+# The frontend build downloads api-client from this repository at API_CLIENT_REF.
+# Keep that ref on the same commit as the deployed API when the schema changes.
+
+databases:
+  - name: gym-hub-db
+    region: frankfurt
+    plan: basic-256mb
+    diskSizeGB: 5
+    postgresMajorVersion: "16"
+    databaseName: gymhub
+    user: gymhub
+    ipAllowList: []
+
+envVarGroups:
+  - name: gym-hub-shared
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.prod
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: CELERY_TASK_ALWAYS_EAGER
+        value: "false"
+      - key: CELERY_TASK_EAGER_PROPAGATES
+        value: "false"
+      - key: NUM_PROXIES
+        value: "1"
+      - key: SMS_PROVIDER
+        value: disabled
+      - key: WHATSAPP_PROVIDER
+        value: disabled
+
+services:
+  - type: keyvalue
+    name: gym-hub-redis
+    region: frankfurt
+    plan: 256mb
+    ipAllowList: []
+
+  - type: web
+    name: gym-hub-api
+    runtime: python
+    region: frankfurt
+    plan: 0.5c-512mb
+    buildCommand: bash build.sh
+    preDeployCommand: python manage.py migrate --noinput
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120 --access-logfile - --error-logfile -
+    healthCheckPath: /api/health/
+    maxShutdownDelaySeconds: 60
+    envVars:
+      - fromGroup: gym-hub-shared
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gym-hub-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: gym-hub-redis
+          type: keyvalue
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: gym-hub-redis
+          type: keyvalue
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          name: gym-hub-redis
+          type: keyvalue
+          property: connectionString
+      # Update when the static site gets a different hostname or custom domain.
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://gym-hub-web.onrender.com
+
+  - type: worker
+    name: gym-hub-worker
+    runtime: python
+    region: frankfurt
+    plan: 0.5c-512mb
+    buildCommand: pip install -r requirements/prod.txt
+    startCommand: celery -A config worker -Q default,notifications -l info --concurrency=2
+    maxShutdownDelaySeconds: 60
+    envVars:
+      - fromGroup: gym-hub-shared
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gym-hub-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: gym-hub-redis
+          type: keyvalue
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: gym-hub-redis
+          type: keyvalue
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          name: gym-hub-redis
+          type: keyvalue
+          property: connectionString
+
+  - type: worker
+    name: gym-hub-beat
+    runtime: python
+    region: frankfurt
+    plan: 0.5c-512mb
+    buildCommand: pip install -r requirements/prod.txt
+    startCommand: celery -A config beat -l info --schedule=/tmp/celerybeat-schedule
+    envVars:
+      - fromGroup: gym-hub-shared
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gym-hub-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: gym-hub-redis
+          type: keyvalue
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: gym-hub-redis
+          type: keyvalue
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          name: gym-hub-redis
+          type: keyvalue
+          property: connectionString
+
+  - type: web
+    name: gym-hub-web
+    runtime: static
+    repo: https://github.com/RexDavid06/Gym-Hub-Frontend
+    branch: main
+    buildCommand: bash render-build.sh
+    staticPublishPath: ./dist
+    envVars:
+      # Render must not auto-install before render-build.sh stages the API client.
+      - key: SKIP_INSTALL_DEPS
+        value: "true"
+      - key: NODE_VERSION
+        value: "22"
+      - key: VITE_API_BASE_URL
+        fromService:
+          name: gym-hub-api
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: API_CLIENT_REF
+        value: main
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
