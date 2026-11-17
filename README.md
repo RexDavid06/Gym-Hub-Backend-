@@ -115,7 +115,7 @@ The repository root contains a `render.yaml` Blueprint. Deploy it from the
 backend repository in the Render Dashboard (New → Blueprint). It provisions:
 
 - a Django web service running Gunicorn, with `/api/health/` as the health check;
-- a Celery worker on the `default,notifications` queues and a Celery beat scheduler;
+- a Celery worker on the `default,notifications,billing` queues and a Celery beat scheduler;
 - Render Postgres and Render Key Value (Redis);
 - the static web dashboard from the `Gym-Hub-Frontend` repository.
 
@@ -127,6 +127,12 @@ The web service runs migrations with `preDeployCommand`, serves Django admin
 static files through WhiteNoise, and trusts Render's proxy headers. Production
 settings fail fast when `DJANGO_SECRET_KEY`, `DATABASE_URL`, or
 `CELERY_BROKER_URL` is missing.
+
+The API service build command must be `bash build.sh`. That installs
+`requirements/prod.txt` (which includes Gunicorn), runs the deployment checks,
+and collects static files. `requirements.txt` also points at the production
+requirements so Render's default installer cannot select the development
+dependencies.
 
 After the first deploy:
 
