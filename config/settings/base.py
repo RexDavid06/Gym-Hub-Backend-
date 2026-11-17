@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "workouts",
     "memberships",
     "notifications",
+    "billing",
     "platform_admin",
 ]
 MIDDLEWARE = [
@@ -107,6 +108,9 @@ SPECTACULAR_SETTINGS = {
     "ENUM_NAME_OVERRIDES": {
         "UserRoleEnum": "accounts.models.USER_ROLE_CHOICES",
         "InviteRoleEnum": "accounts.models.INVITE_ROLE_CHOICES",
+        "BillingPaymentMethodEnum": "billing.models.BILLING_PAYMENT_METHOD_CHOICES",
+        "BillingSubscriptionStatusEnum": "billing.models.BILLING_SUBSCRIPTION_STATUS_CHOICES",
+        "PlanTierEnum": "billing.models.BILLING_PLAN_TIER_CHOICES",
     },
 }
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=["http://localhost:5173"])
@@ -126,12 +130,27 @@ CELERY_TASK_REJECT_ON_WORKER_LOST = True
 CELERY_TASK_DEFAULT_QUEUE = "default"
 CELERY_TASK_ROUTES = {
     "notifications.tasks.deliver_notification": {"queue": "notifications"},
+    "billing.tasks.generate_billing_invoices": {"queue": "billing"},
+    "billing.tasks.run_billing_dunning": {"queue": "billing"},
+    "billing.tasks.reconcile_paystack_payments": {"queue": "billing"},
 }
 CELERY_BEAT_SCHEDULE = {
     "schedule-membership-reminders": {
         "task": "notifications.tasks.schedule_membership_reminders",
         "schedule": crontab(hour=8, minute=0),
-    }
+    },
+    "generate-billing-invoices": {
+        "task": "billing.tasks.generate_billing_invoices",
+        "schedule": crontab(hour=1, minute=0),
+    },
+    "run-billing-dunning": {
+        "task": "billing.tasks.run_billing_dunning",
+        "schedule": crontab(hour=8, minute=30),
+    },
+    "reconcile-paystack-payments": {
+        "task": "billing.tasks.reconcile_paystack_payments",
+        "schedule": crontab(minute="*/30"),
+    },
 }
 
 SMS_PROVIDER = env("SMS_PROVIDER", default="console")
@@ -155,3 +174,16 @@ WHATSAPP_TEMPLATE_PAYMENT_RECEIPT = env(
     "WHATSAPP_TEMPLATE_PAYMENT_RECEIPT", default="payment_receipt"
 )
 NOTIFICATION_HTTP_TIMEOUT = env.int("NOTIFICATION_HTTP_TIMEOUT", default=10)
+
+BILLING_CURRENCY = env("BILLING_CURRENCY", default="NGN")
+BILLING_PROVIDER = env("BILLING_PROVIDER", default="manual")
+BILLING_DUE_DAYS = env.int("BILLING_DUE_DAYS", default=7)
+BILLING_DUNNING_ENABLED = env.bool("BILLING_DUNNING_ENABLED", default=False)
+BILLING_DUNNING_OFFSETS = env.list("BILLING_DUNNING_OFFSETS", default=[-3, 0, 3, 7, 14], cast=int)
+BILLING_AUTO_SUSPEND_ENABLED = env.bool("BILLING_AUTO_SUSPEND_ENABLED", default=False)
+BILLING_GRACE_PERIOD_DAYS = env.int("BILLING_GRACE_PERIOD_DAYS", default=14)
+BILLING_HTTP_TIMEOUT = env.int("BILLING_HTTP_TIMEOUT", default=15)
+BILLING_RUN_BATCH_SIZE = env.int("BILLING_RUN_BATCH_SIZE", default=200)
+PAYSTACK_SECRET_KEY = env("PAYSTACK_SECRET_KEY", default="")
+PAYSTACK_PUBLIC_KEY = env("PAYSTACK_PUBLIC_KEY", default="")
+PAYSTACK_EMAIL_DOMAIN = env("PAYSTACK_EMAIL_DOMAIN", default="gymhub.ng")

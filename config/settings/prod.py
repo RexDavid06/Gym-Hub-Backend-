@@ -31,6 +31,12 @@ if WHATSAPP_PROVIDER == "meta":  # noqa: F405
         raise RuntimeError(
             "Meta WhatsApp credentials and template names must be set when WhatsApp is enabled"
         )
+if BILLING_PROVIDER not in {"manual", "paystack"}:  # noqa: F405
+    raise RuntimeError("Production billing provider must be manual or paystack")
+if BILLING_PROVIDER == "paystack" and not (  # noqa: F405
+    PAYSTACK_SECRET_KEY and PAYSTACK_PUBLIC_KEY  # noqa: F405
+):
+    raise RuntimeError("Paystack keys must be set when BILLING_PROVIDER=paystack in production")
 RENDER_EXTERNAL_HOSTNAME = env("RENDER_EXTERNAL_HOSTNAME", default="").strip()  # noqa: F405
 if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:  # noqa: F405
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)  # noqa: F405

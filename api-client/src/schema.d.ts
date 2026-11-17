@@ -101,6 +101,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/billing/invoices/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["owner_billing_invoice_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/billing/invoices/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["owner_billing_invoice_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/billing/invoices/{id}/checkout/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["owner_billing_invoice_checkout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/billing/payments/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["owner_billing_payment_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/billing/subscription/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["owner_billing_subscription"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/branches/": {
         parameters: {
             query?: never;
@@ -478,6 +558,310 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/platform/billing/dunning/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["platform_billing_dunning_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/invoices/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["platform_billing_invoice_list"];
+        put?: never;
+        post: operations["platform_billing_invoice_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/invoices/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["platform_billing_invoice_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/invoices/{id}/dun/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["platform_billing_invoice_dun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/invoices/{id}/mark-paid/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["platform_billing_invoice_mark_paid"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/invoices/{id}/void/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["platform_billing_invoice_void"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/payments/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["platform_billing_payment_list"];
+        put?: never;
+        post: operations["platform_billing_payment_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/payments/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["platform_billing_payment_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/payments/{id}/void/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["platform_billing_payment_void"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/plans/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["platform_billing_plan_list"];
+        put?: never;
+        post: operations["platform_billing_plan_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/plans/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["platform_billing_plan_detail"];
+        put?: never;
+        post?: never;
+        delete: operations["platform_billing_plan_delete"];
+        options?: never;
+        head?: never;
+        patch: operations["platform_billing_plan_update"];
+        trace?: never;
+    };
+    "/api/platform/billing/plans/{id}/prices/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["platform_billing_plan_price_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/subscriptions/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["platform_billing_subscription_list"];
+        put?: never;
+        post: operations["platform_billing_subscription_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/subscriptions/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["platform_billing_subscription_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/subscriptions/{id}/cancel/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["platform_billing_subscription_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/subscriptions/{id}/change-plan/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["platform_billing_subscription_change_plan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/subscriptions/{id}/reactivate/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["platform_billing_subscription_reactivate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/summary/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["platform_billing_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/platform/billing/webhooks/paystack/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["billing_paystack_webhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/platform/gyms/": {
         parameters: {
             query?: never;
@@ -706,6 +1090,80 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        BillingPayment: {
+            readonly id: number;
+            readonly gym: components["schemas"]["GymRef"];
+            readonly invoice: components["schemas"]["InvoiceRef"];
+            readonly plan_name: string;
+            /** Format: decimal */
+            readonly amount: string;
+            readonly method: components["schemas"]["BillingPaymentMethodEnum"];
+            /** @default manual */
+            readonly provider: components["schemas"]["ProviderEnum"];
+            /** @default  */
+            readonly provider_reference: string;
+            readonly reference: string;
+            /** Format: date */
+            readonly paid_at: string;
+            readonly recorded_by: components["schemas"]["UserRef"] | null;
+            /** Format: date-time */
+            readonly voided_at: string | null;
+            readonly void_reason: string;
+            readonly is_voided: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
+        /**
+         * @description * `card` - Card
+         *     * `transfer` - Bank transfer
+         *     * `cash` - Cash
+         *     * `pos` - POS
+         *     * `other` - Other
+         * @enum {string}
+         */
+        BillingPaymentMethodEnum: "card" | "transfer" | "cash" | "pos" | "other";
+        BillingPlan: {
+            readonly id: number;
+            name: string;
+            tier: components["schemas"]["PlanTierEnum"];
+            description?: string;
+            is_active?: boolean;
+            is_public?: boolean;
+            readonly prices: components["schemas"]["BillingPlanPrice"][];
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        BillingPlanPrice: {
+            readonly id: number;
+            interval: components["schemas"]["IntervalEnum"];
+            readonly duration_months: number;
+            currency?: string;
+            /** Format: decimal */
+            amount: string;
+            /** Format: date */
+            effective_from?: string;
+            is_active?: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
+        BillingPlanWrite: {
+            readonly id: number;
+            name: string;
+            tier: components["schemas"]["PlanTierEnum"];
+            description?: string;
+            is_active?: boolean;
+            is_public?: boolean;
+        };
+        /**
+         * @description * `trialing` - Trialing
+         *     * `active` - Active
+         *     * `past_due` - Past due
+         *     * `cancelled` - Cancelled
+         * @enum {string}
+         */
+        BillingSubscriptionStatusEnum: "trialing" | "active" | "past_due" | "cancelled";
         Branch: {
             readonly id: number;
             name: string;
@@ -721,6 +1179,13 @@ export interface components {
          * @enum {string}
          */
         ChannelEnum: "sms" | "whatsapp";
+        Checkout: {
+            /** Format: uri */
+            authorization_url: string;
+            reference: string;
+            /** Format: decimal */
+            amount: string;
+        };
         /**
          * @description * `manage_members` - manage_members
          *     * `manage_trainers` - manage_trainers
@@ -730,6 +1195,29 @@ export interface components {
          * @enum {string}
          */
         CodesEnum: "manage_members" | "manage_trainers" | "manage_payments" | "assign_trainers" | "view_reports";
+        DunningAttempt: {
+            readonly id: number;
+            readonly invoice: number;
+            readonly invoice_number: string;
+            readonly gym: components["schemas"]["GymRef"];
+            readonly offset_days: number;
+            /** @default sms */
+            readonly channel: components["schemas"]["ChannelEnum"];
+            readonly status: components["schemas"]["DunningAttemptStatusEnum"];
+            /** Format: date-time */
+            readonly sent_at: string | null;
+            readonly error: string;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
+        /**
+         * @description * `pending` - Pending
+         *     * `sent` - Sent
+         *     * `failed` - Failed
+         *     * `skipped` - Skipped
+         * @enum {string}
+         */
+        DunningAttemptStatusEnum: "pending" | "sent" | "failed" | "skipped";
         /**
          * @description * `membership_expiring` - Membership expiring
          *     * `membership_expired` - Membership expired
@@ -737,10 +1225,43 @@ export interface components {
          * @enum {string}
          */
         EventEnum: "membership_expiring" | "membership_expired" | "payment_receipt";
+        GymBillingSubscription: {
+            readonly id: number;
+            readonly gym: components["schemas"]["GymRef"];
+            readonly plan: components["schemas"]["SubscriptionPlan"];
+            readonly price: components["schemas"]["SubscriptionPrice"];
+            readonly interval: components["schemas"]["IntervalEnum"];
+            readonly status: components["schemas"]["BillingSubscriptionStatusEnum"];
+            /** Format: date-time */
+            readonly started_at: string;
+            /** Format: date */
+            readonly current_period_start: string;
+            /** Format: date */
+            readonly current_period_end: string;
+            readonly cancel_at_period_end: boolean;
+            /** Format: decimal */
+            readonly balance: string;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        GymRef: {
+            id: number;
+            name: string;
+        };
         GymSummary: {
             id: number;
             name: string;
         };
+        /**
+         * @description * `monthly` - Monthly
+         *     * `quarterly` - 3 months
+         *     * `semiannual` - 6 months
+         *     * `annual` - Annual
+         * @enum {string}
+         */
+        IntervalEnum: "monthly" | "quarterly" | "semiannual" | "annual";
         InviteCreate: {
             role: components["schemas"]["InviteRoleEnum"];
             phone: string;
@@ -775,8 +1296,63 @@ export interface components {
          * @enum {string}
          */
         InviteRoleEnum: "admin" | "trainer" | "member";
+        Invoice: {
+            readonly id: number;
+            readonly number: string;
+            readonly gym: components["schemas"]["GymRef"];
+            readonly plan: number;
+            readonly plan_name: string;
+            readonly interval: components["schemas"]["IntervalEnum"];
+            readonly status: components["schemas"]["InvoiceStatusEnum"];
+            /** Format: date */
+            readonly issued_at: string;
+            /** Format: date */
+            readonly due_at: string;
+            /** Format: date */
+            readonly period_start: string;
+            /** Format: date */
+            readonly period_end: string;
+            readonly description: string;
+            /** Format: decimal */
+            readonly amount: string;
+            /** Format: decimal */
+            readonly amount_paid: string;
+            /** Format: decimal */
+            readonly balance: string;
+            readonly is_overpaid: boolean;
+            readonly currency: string;
+            readonly notes: string;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly voided_at: string | null;
+            readonly void_reason: string;
+        };
+        InvoiceCreate: {
+            gym_id: number;
+            subscription_id?: number | null;
+        };
+        InvoiceRef: {
+            id: number;
+            number: string;
+        };
+        /**
+         * @description * `open` - Open
+         *     * `paid` - Paid
+         *     * `overdue` - Overdue
+         *     * `void` - Void
+         * @enum {string}
+         */
+        InvoiceStatusEnum: "open" | "paid" | "overdue" | "void";
         Logout: {
             refresh: string;
+        };
+        MarkPaid: {
+            /** Format: decimal */
+            amount?: string;
+            /** @default transfer */
+            method: components["schemas"]["BillingPaymentMethodEnum"];
+            reference?: string;
         };
         Me: {
             id: number;
@@ -800,7 +1376,7 @@ export interface components {
             subscription_id?: number | null;
             /** Format: decimal */
             amount?: string;
-            method?: components["schemas"]["MethodEnum"];
+            method?: components["schemas"]["MembershipPaymentMethodEnum"];
             reference?: string;
             /** Format: date */
             paid_at?: string;
@@ -815,6 +1391,14 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        /**
+         * @description * `cash` - Cash
+         *     * `transfer` - Bank transfer
+         *     * `pos` - POS
+         *     * `other` - Other
+         * @enum {string}
+         */
+        MembershipPaymentMethodEnum: "cash" | "transfer" | "pos" | "other";
         MembershipPlan: {
             readonly id: number;
             name: string;
@@ -855,14 +1439,6 @@ export interface components {
          * @enum {string}
          */
         MembershipSubscriptionStatusEnum: "active" | "expired" | "cancelled";
-        /**
-         * @description * `cash` - Cash
-         *     * `transfer` - Bank transfer
-         *     * `pos` - POS
-         *     * `other` - Other
-         * @enum {string}
-         */
-        MethodEnum: "cash" | "transfer" | "pos" | "other";
         MyMembership: {
             subscription: components["schemas"]["MembershipSubscription"] | null;
             payments: components["schemas"]["MembershipPayment"][];
@@ -917,6 +1493,18 @@ export interface components {
          * @enum {string}
          */
         NotificationStatusEnum: "pending" | "sending" | "sent" | "failed" | "skipped";
+        PaginatedDunning: {
+            count: number;
+            next?: string | null;
+            previous?: string | null;
+            results: components["schemas"]["DunningAttempt"][];
+        };
+        PaginatedInvoice: {
+            count: number;
+            next?: string | null;
+            previous?: string | null;
+            results: components["schemas"]["Invoice"][];
+        };
         PaginatedNotificationList: {
             /** @example 123 */
             count: number;
@@ -932,12 +1520,32 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["Notification"][];
         };
+        PaginatedPayment: {
+            count: number;
+            next?: string | null;
+            previous?: string | null;
+            results: components["schemas"]["BillingPayment"][];
+        };
         /** @description The page-number paginated shape returned by the gym list endpoint. */
         PaginatedPlatformGymList: {
             count: number;
             next: string | null;
             previous: string | null;
             results: components["schemas"]["PlatformGymList"][];
+        };
+        PaginatedSubscription: {
+            count: number;
+            next?: string | null;
+            previous?: string | null;
+            results: components["schemas"]["GymBillingSubscription"][];
+        };
+        PatchedBillingPlanWrite: {
+            readonly id?: number;
+            name?: string;
+            tier?: components["schemas"]["PlanTierEnum"];
+            description?: string;
+            is_active?: boolean;
+            is_public?: boolean;
         };
         PatchedBranch: {
             readonly id?: number;
@@ -990,6 +1598,14 @@ export interface components {
             /** Format: date-time */
             readonly updated_at?: string;
         };
+        PaymentCreate: {
+            invoice_id: number;
+            /** Format: decimal */
+            amount?: string;
+            /** @default transfer */
+            method: components["schemas"]["BillingPaymentMethodEnum"];
+            reference?: string;
+        };
         PhoneToken: {
             phone: string;
             password: string;
@@ -1001,6 +1617,19 @@ export interface components {
          * @enum {string}
          */
         PlanTierEnum: "small" | "medium" | "big";
+        PlatformBillingSummary: {
+            active_subscriptions: number;
+            subscriptions_by_tier: {
+                [key: string]: number;
+            };
+            /** Format: decimal */
+            monthly_recurring_revenue: string;
+            /** Format: decimal */
+            outstanding_balance: string;
+            overdue_invoice_count: number;
+            /** Format: decimal */
+            collected_this_month: string;
+        };
         PlatformGymDetail: {
             id: number;
             name: string;
@@ -1044,6 +1673,12 @@ export interface components {
             name: string;
             phone: string;
         };
+        /**
+         * @description * `paystack` - Paystack
+         *     * `manual` - Manual
+         * @enum {string}
+         */
+        ProviderEnum: "paystack" | "manual";
         RedeemInvite: {
             code: string;
             password: string;
@@ -1080,6 +1715,32 @@ export interface components {
         StaffPermissionSet: {
             codes: components["schemas"]["CodesEnum"][];
         };
+        SubscriptionChangePlan: {
+            plan_id?: number;
+            interval?: components["schemas"]["IntervalEnum"];
+        };
+        SubscriptionCreate: {
+            gym_id: number;
+            plan_id: number;
+            interval: components["schemas"]["IntervalEnum"];
+            /** @default active */
+            status: components["schemas"]["BillingSubscriptionStatusEnum"];
+            /** Format: date */
+            start?: string;
+        };
+        SubscriptionPlan: {
+            id: number;
+            name: string;
+            tier: string;
+        };
+        SubscriptionPrice: {
+            id: number;
+            interval: string;
+            duration_months: number;
+            currency: string;
+            /** Format: decimal */
+            amount: string;
+        };
         TokenPair: {
             refresh: string;
             access: string;
@@ -1111,6 +1772,11 @@ export interface components {
             readonly assigned_trainer: components["schemas"]["UserSummary"] | null;
             readonly whatsapp_opt_in: boolean;
         };
+        UserRef: {
+            id: number;
+            name: string;
+            phone: string;
+        };
         /**
          * @description * `super_admin` - Super admin
          *     * `owner` - Owner
@@ -1124,6 +1790,9 @@ export interface components {
             readonly id: number;
             name?: string;
             phone: string;
+        };
+        Void: {
+            reason: string;
         };
         VoidPayment: {
             reason: string;
@@ -1306,6 +1975,111 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RegisteredGym"];
+                };
+            };
+        };
+    };
+    owner_billing_invoice_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedInvoice"];
+                };
+            };
+        };
+    };
+    owner_billing_invoice_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Invoice"];
+                };
+            };
+        };
+    };
+    owner_billing_invoice_checkout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Checkout"];
+                };
+            };
+        };
+    };
+    owner_billing_payment_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedPayment"];
+                };
+            };
+        };
+    };
+    owner_billing_subscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GymBillingSubscription"];
                 };
             };
         };
@@ -2131,6 +2905,587 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Notification"];
                 };
+            };
+        };
+    };
+    platform_billing_dunning_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedDunning"];
+                };
+            };
+        };
+    };
+    platform_billing_invoice_list: {
+        parameters: {
+            query?: {
+                gym?: number;
+                page?: number;
+                page_size?: number;
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedInvoice"];
+                };
+            };
+        };
+    };
+    platform_billing_invoice_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvoiceCreate"];
+                "application/x-www-form-urlencoded": components["schemas"]["InvoiceCreate"];
+                "multipart/form-data": components["schemas"]["InvoiceCreate"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Invoice"];
+                };
+            };
+        };
+    };
+    platform_billing_invoice_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Invoice"];
+                };
+            };
+        };
+    };
+    platform_billing_invoice_dun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DunningAttempt"];
+                };
+            };
+        };
+    };
+    platform_billing_invoice_mark_paid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["MarkPaid"];
+                "application/x-www-form-urlencoded": components["schemas"]["MarkPaid"];
+                "multipart/form-data": components["schemas"]["MarkPaid"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingPayment"];
+                };
+            };
+        };
+    };
+    platform_billing_invoice_void: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Void"];
+                "application/x-www-form-urlencoded": components["schemas"]["Void"];
+                "multipart/form-data": components["schemas"]["Void"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Invoice"];
+                };
+            };
+        };
+    };
+    platform_billing_payment_list: {
+        parameters: {
+            query?: {
+                gym?: number;
+                invoice?: number;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedPayment"];
+                };
+            };
+        };
+    };
+    platform_billing_payment_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentCreate"];
+                "application/x-www-form-urlencoded": components["schemas"]["PaymentCreate"];
+                "multipart/form-data": components["schemas"]["PaymentCreate"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingPayment"];
+                };
+            };
+        };
+    };
+    platform_billing_payment_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingPayment"];
+                };
+            };
+        };
+    };
+    platform_billing_payment_void: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Void"];
+                "application/x-www-form-urlencoded": components["schemas"]["Void"];
+                "multipart/form-data": components["schemas"]["Void"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingPayment"];
+                };
+            };
+        };
+    };
+    platform_billing_plan_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingPlan"][];
+                };
+            };
+        };
+    };
+    platform_billing_plan_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingPlanWrite"];
+                "application/x-www-form-urlencoded": components["schemas"]["BillingPlanWrite"];
+                "multipart/form-data": components["schemas"]["BillingPlanWrite"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingPlan"];
+                };
+            };
+        };
+    };
+    platform_billing_plan_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingPlan"];
+                };
+            };
+        };
+    };
+    platform_billing_plan_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    platform_billing_plan_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedBillingPlanWrite"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedBillingPlanWrite"];
+                "multipart/form-data": components["schemas"]["PatchedBillingPlanWrite"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingPlan"];
+                };
+            };
+        };
+    };
+    platform_billing_plan_price_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingPlanPrice"];
+                "application/x-www-form-urlencoded": components["schemas"]["BillingPlanPrice"];
+                "multipart/form-data": components["schemas"]["BillingPlanPrice"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingPlanPrice"];
+                };
+            };
+        };
+    };
+    platform_billing_subscription_list: {
+        parameters: {
+            query?: {
+                gym?: number;
+                page?: number;
+                page_size?: number;
+                plan?: number;
+                status?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedSubscription"];
+                };
+            };
+        };
+    };
+    platform_billing_subscription_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionCreate"];
+                "application/x-www-form-urlencoded": components["schemas"]["SubscriptionCreate"];
+                "multipart/form-data": components["schemas"]["SubscriptionCreate"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GymBillingSubscription"];
+                };
+            };
+        };
+    };
+    platform_billing_subscription_detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GymBillingSubscription"];
+                };
+            };
+        };
+    };
+    platform_billing_subscription_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GymBillingSubscription"];
+                };
+            };
+        };
+    };
+    platform_billing_subscription_change_plan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionChangePlan"];
+                "application/x-www-form-urlencoded": components["schemas"]["SubscriptionChangePlan"];
+                "multipart/form-data": components["schemas"]["SubscriptionChangePlan"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GymBillingSubscription"];
+                };
+            };
+        };
+    };
+    platform_billing_subscription_reactivate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GymBillingSubscription"];
+                };
+            };
+        };
+    };
+    platform_billing_summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformBillingSummary"];
+                };
+            };
+        };
+    };
+    billing_paystack_webhook: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

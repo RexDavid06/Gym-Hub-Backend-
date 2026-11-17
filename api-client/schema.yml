@@ -150,6 +150,106 @@ paths:
               schema:
                 $ref: '#/components/schemas/RegisteredGym'
           description: ''
+  /api/billing/invoices/:
+    get:
+      operationId: owner_billing_invoice_list
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+      tags:
+      - billing
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInvoice'
+          description: ''
+  /api/billing/invoices/{id}/:
+    get:
+      operationId: owner_billing_invoice_detail
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - billing
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+          description: ''
+  /api/billing/invoices/{id}/checkout/:
+    post:
+      operationId: owner_billing_invoice_checkout
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - billing
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Checkout'
+          description: ''
+  /api/billing/payments/:
+    get:
+      operationId: owner_billing_payment_list
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+      tags:
+      - billing
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPayment'
+          description: ''
+  /api/billing/subscription/:
+    get:
+      operationId: owner_billing_subscription
+      tags:
+      - billing
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GymBillingSubscription'
+          description: ''
   /api/branches/:
     get:
       operationId: branches_list
@@ -1014,6 +1114,611 @@ paths:
               schema:
                 $ref: '#/components/schemas/Notification'
           description: ''
+  /api/platform/billing/dunning/:
+    get:
+      operationId: platform_billing_dunning_list
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDunning'
+          description: ''
+  /api/platform/billing/invoices/:
+    get:
+      operationId: platform_billing_invoice_list
+      parameters:
+      - in: query
+        name: gym
+        schema:
+          type: integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInvoice'
+          description: ''
+    post:
+      operationId: platform_billing_invoice_create
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvoiceCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvoiceCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+          description: ''
+  /api/platform/billing/invoices/{id}/:
+    get:
+      operationId: platform_billing_invoice_detail
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+          description: ''
+  /api/platform/billing/invoices/{id}/dun/:
+    post:
+      operationId: platform_billing_invoice_dun
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DunningAttempt'
+          description: ''
+  /api/platform/billing/invoices/{id}/mark-paid/:
+    post:
+      operationId: platform_billing_invoice_mark_paid
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkPaid'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MarkPaid'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MarkPaid'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingPayment'
+          description: ''
+  /api/platform/billing/invoices/{id}/void/:
+    post:
+      operationId: platform_billing_invoice_void
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Void'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Void'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Void'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+          description: ''
+  /api/platform/billing/payments/:
+    get:
+      operationId: platform_billing_payment_list
+      parameters:
+      - in: query
+        name: gym
+        schema:
+          type: integer
+      - in: query
+        name: invoice
+        schema:
+          type: integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPayment'
+          description: ''
+    post:
+      operationId: platform_billing_payment_create
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingPayment'
+          description: ''
+  /api/platform/billing/payments/{id}/:
+    get:
+      operationId: platform_billing_payment_detail
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingPayment'
+          description: ''
+  /api/platform/billing/payments/{id}/void/:
+    post:
+      operationId: platform_billing_payment_void
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Void'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Void'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Void'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingPayment'
+          description: ''
+  /api/platform/billing/plans/:
+    get:
+      operationId: platform_billing_plan_list
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BillingPlan'
+          description: ''
+    post:
+      operationId: platform_billing_plan_create
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BillingPlanWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BillingPlanWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BillingPlanWrite'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingPlan'
+          description: ''
+  /api/platform/billing/plans/{id}/:
+    get:
+      operationId: platform_billing_plan_detail
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingPlan'
+          description: ''
+    patch:
+      operationId: platform_billing_plan_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBillingPlanWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBillingPlanWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBillingPlanWrite'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingPlan'
+          description: ''
+    delete:
+      operationId: platform_billing_plan_delete
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/platform/billing/plans/{id}/prices/:
+    post:
+      operationId: platform_billing_plan_price_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BillingPlanPrice'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BillingPlanPrice'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BillingPlanPrice'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingPlanPrice'
+          description: ''
+  /api/platform/billing/subscriptions/:
+    get:
+      operationId: platform_billing_subscription_list
+      parameters:
+      - in: query
+        name: gym
+        schema:
+          type: integer
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+      - in: query
+        name: plan
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSubscription'
+          description: ''
+    post:
+      operationId: platform_billing_subscription_create
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubscriptionCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubscriptionCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GymBillingSubscription'
+          description: ''
+  /api/platform/billing/subscriptions/{id}/:
+    get:
+      operationId: platform_billing_subscription_detail
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GymBillingSubscription'
+          description: ''
+  /api/platform/billing/subscriptions/{id}/cancel/:
+    post:
+      operationId: platform_billing_subscription_cancel
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GymBillingSubscription'
+          description: ''
+  /api/platform/billing/subscriptions/{id}/change-plan/:
+    post:
+      operationId: platform_billing_subscription_change_plan
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionChangePlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubscriptionChangePlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubscriptionChangePlan'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GymBillingSubscription'
+          description: ''
+  /api/platform/billing/subscriptions/{id}/reactivate/:
+    post:
+      operationId: platform_billing_subscription_reactivate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GymBillingSubscription'
+          description: ''
+  /api/platform/billing/summary/:
+    get:
+      operationId: platform_billing_summary
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformBillingSummary'
+          description: ''
+  /api/platform/billing/webhooks/paystack/:
+    post:
+      operationId: billing_paystack_webhook
+      tags:
+      - platform
+      responses:
+        '200':
+          description: No response body
   /api/platform/gyms/:
     get:
       operationId: platform_gym_list
@@ -1494,6 +2199,201 @@ paths:
           description: No response body
 components:
   schemas:
+    BillingPayment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        gym:
+          allOf:
+          - $ref: '#/components/schemas/GymRef'
+          readOnly: true
+        invoice:
+          allOf:
+          - $ref: '#/components/schemas/InvoiceRef'
+          readOnly: true
+        plan_name:
+          type: string
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        method:
+          allOf:
+          - $ref: '#/components/schemas/BillingPaymentMethodEnum'
+          readOnly: true
+        provider:
+          allOf:
+          - $ref: '#/components/schemas/ProviderEnum'
+          readOnly: true
+          default: manual
+        provider_reference:
+          type: string
+          readOnly: true
+          default: ''
+        reference:
+          type: string
+          readOnly: true
+        paid_at:
+          type: string
+          format: date
+          readOnly: true
+        recorded_by:
+          allOf:
+          - $ref: '#/components/schemas/UserRef'
+          readOnly: true
+          nullable: true
+        voided_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        void_reason:
+          type: string
+          readOnly: true
+        is_voided:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created_at
+      - gym
+      - id
+      - invoice
+      - is_voided
+      - method
+      - paid_at
+      - plan_name
+      - provider
+      - provider_reference
+      - recorded_by
+      - reference
+      - void_reason
+      - voided_at
+    BillingPaymentMethodEnum:
+      enum:
+      - card
+      - transfer
+      - cash
+      - pos
+      - other
+      type: string
+      description: |-
+        * `card` - Card
+        * `transfer` - Bank transfer
+        * `cash` - Cash
+        * `pos` - POS
+        * `other` - Other
+    BillingPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        tier:
+          $ref: '#/components/schemas/PlanTierEnum'
+        description:
+          type: string
+        is_active:
+          type: boolean
+        is_public:
+          type: boolean
+        prices:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingPlanPrice'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - prices
+      - tier
+      - updated_at
+    BillingPlanPrice:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        interval:
+          $ref: '#/components/schemas/IntervalEnum'
+        duration_months:
+          type: integer
+          readOnly: true
+        currency:
+          type: string
+          maxLength: 3
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        effective_from:
+          type: string
+          format: date
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created_at
+      - duration_months
+      - id
+      - interval
+    BillingPlanWrite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        tier:
+          $ref: '#/components/schemas/PlanTierEnum'
+        description:
+          type: string
+        is_active:
+          type: boolean
+        is_public:
+          type: boolean
+      required:
+      - id
+      - name
+      - tier
+    BillingSubscriptionStatusEnum:
+      enum:
+      - trialing
+      - active
+      - past_due
+      - cancelled
+      type: string
+      description: |-
+        * `trialing` - Trialing
+        * `active` - Active
+        * `past_due` - Past due
+        * `cancelled` - Cancelled
     Branch:
       type: object
       properties:
@@ -1528,6 +2428,22 @@ components:
       description: |-
         * `sms` - SMS
         * `whatsapp` - WhatsApp
+    Checkout:
+      type: object
+      properties:
+        authorization_url:
+          type: string
+          format: uri
+        reference:
+          type: string
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+      required:
+      - amount
+      - authorization_url
+      - reference
     CodesEnum:
       enum:
       - manage_members
@@ -1542,6 +2458,69 @@ components:
         * `manage_payments` - manage_payments
         * `assign_trainers` - assign_trainers
         * `view_reports` - view_reports
+    DunningAttempt:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        invoice:
+          type: integer
+          readOnly: true
+        invoice_number:
+          type: string
+          readOnly: true
+        gym:
+          allOf:
+          - $ref: '#/components/schemas/GymRef'
+          readOnly: true
+        offset_days:
+          type: integer
+          readOnly: true
+        channel:
+          allOf:
+          - $ref: '#/components/schemas/ChannelEnum'
+          readOnly: true
+          default: sms
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DunningAttemptStatusEnum'
+          readOnly: true
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        error:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - channel
+      - created_at
+      - error
+      - gym
+      - id
+      - invoice
+      - invoice_number
+      - offset_days
+      - sent_at
+      - status
+    DunningAttemptStatusEnum:
+      enum:
+      - pending
+      - sent
+      - failed
+      - skipped
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `sent` - Sent
+        * `failed` - Failed
+        * `skipped` - Skipped
     EventEnum:
       enum:
       - membership_expiring
@@ -1552,6 +2531,84 @@ components:
         * `membership_expiring` - Membership expiring
         * `membership_expired` - Membership expired
         * `payment_receipt` - Payment receipt
+    GymBillingSubscription:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        gym:
+          allOf:
+          - $ref: '#/components/schemas/GymRef'
+          readOnly: true
+        plan:
+          allOf:
+          - $ref: '#/components/schemas/SubscriptionPlan'
+          readOnly: true
+        price:
+          allOf:
+          - $ref: '#/components/schemas/SubscriptionPrice'
+          readOnly: true
+        interval:
+          allOf:
+          - $ref: '#/components/schemas/IntervalEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BillingSubscriptionStatusEnum'
+          readOnly: true
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+        current_period_start:
+          type: string
+          format: date
+          readOnly: true
+        current_period_end:
+          type: string
+          format: date
+          readOnly: true
+        cancel_at_period_end:
+          type: boolean
+          readOnly: true
+        balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - balance
+      - cancel_at_period_end
+      - created_at
+      - current_period_end
+      - current_period_start
+      - gym
+      - id
+      - interval
+      - plan
+      - price
+      - started_at
+      - status
+      - updated_at
+    GymRef:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+      - id
+      - name
     GymSummary:
       type: object
       properties:
@@ -1562,6 +2619,18 @@ components:
       required:
       - id
       - name
+    IntervalEnum:
+      enum:
+      - monthly
+      - quarterly
+      - semiannual
+      - annual
+      type: string
+      description: |-
+        * `monthly` - Monthly
+        * `quarterly` - 3 months
+        * `semiannual` - 6 months
+        * `annual` - Annual
     InviteCreate:
       type: object
       properties:
@@ -1645,6 +2714,142 @@ components:
         * `admin` - Admin
         * `trainer` - Trainer
         * `member` - Member
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        number:
+          type: string
+          readOnly: true
+        gym:
+          allOf:
+          - $ref: '#/components/schemas/GymRef'
+          readOnly: true
+        plan:
+          type: integer
+          readOnly: true
+        plan_name:
+          type: string
+          readOnly: true
+        interval:
+          allOf:
+          - $ref: '#/components/schemas/IntervalEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/InvoiceStatusEnum'
+          readOnly: true
+        issued_at:
+          type: string
+          format: date
+          readOnly: true
+        due_at:
+          type: string
+          format: date
+          readOnly: true
+        period_start:
+          type: string
+          format: date
+          readOnly: true
+        period_end:
+          type: string
+          format: date
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        amount_paid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        is_overpaid:
+          type: boolean
+          readOnly: true
+        currency:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        voided_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        void_reason:
+          type: string
+          readOnly: true
+      required:
+      - amount
+      - amount_paid
+      - balance
+      - created_at
+      - currency
+      - description
+      - due_at
+      - gym
+      - id
+      - interval
+      - is_overpaid
+      - issued_at
+      - notes
+      - number
+      - period_end
+      - period_start
+      - plan
+      - plan_name
+      - status
+      - void_reason
+      - voided_at
+    InvoiceCreate:
+      type: object
+      properties:
+        gym_id:
+          type: integer
+        subscription_id:
+          type: integer
+          nullable: true
+      required:
+      - gym_id
+    InvoiceRef:
+      type: object
+      properties:
+        id:
+          type: integer
+        number:
+          type: string
+      required:
+      - id
+      - number
+    InvoiceStatusEnum:
+      enum:
+      - open
+      - paid
+      - overdue
+      - void
+      type: string
+      description: |-
+        * `open` - Open
+        * `paid` - Paid
+        * `overdue` - Overdue
+        * `void` - Void
     Logout:
       type: object
       properties:
@@ -1652,6 +2857,19 @@ components:
           type: string
       required:
       - refresh
+    MarkPaid:
+      type: object
+      properties:
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        method:
+          allOf:
+          - $ref: '#/components/schemas/BillingPaymentMethodEnum'
+          default: transfer
+        reference:
+          type: string
     Me:
       type: object
       properties:
@@ -1727,7 +2945,7 @@ components:
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
         method:
-          $ref: '#/components/schemas/MethodEnum'
+          $ref: '#/components/schemas/MembershipPaymentMethodEnum'
         reference:
           type: string
           maxLength: 100
@@ -1773,6 +2991,18 @@ components:
       - void_reason
       - voided_at
       - voided_by
+    MembershipPaymentMethodEnum:
+      enum:
+      - cash
+      - transfer
+      - pos
+      - other
+      type: string
+      description: |-
+        * `cash` - Cash
+        * `transfer` - Bank transfer
+        * `pos` - POS
+        * `other` - Other
     MembershipPlan:
       type: object
       properties:
@@ -1879,18 +3109,6 @@ components:
         * `active` - Active
         * `expired` - Expired
         * `cancelled` - Cancelled
-    MethodEnum:
-      enum:
-      - cash
-      - transfer
-      - pos
-      - other
-      type: string
-      description: |-
-        * `cash` - Cash
-        * `transfer` - Bank transfer
-        * `pos` - POS
-        * `other` - Other
     MyMembership:
       type: object
       properties:
@@ -2050,6 +3268,42 @@ components:
         * `sent` - Sent
         * `failed` - Failed
         * `skipped` - Skipped
+    PaginatedDunning:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DunningAttempt'
+      required:
+      - count
+      - results
+    PaginatedInvoice:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Invoice'
+      required:
+      - count
+      - results
     PaginatedNotificationList:
       type: object
       required:
@@ -2073,6 +3327,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Notification'
+    PaginatedPayment:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingPayment'
+      required:
+      - count
+      - results
     PaginatedPlatformGymList:
       type: object
       description: The page-number paginated shape returned by the gym list endpoint.
@@ -2094,6 +3366,41 @@ components:
       - next
       - previous
       - results
+    PaginatedSubscription:
+      type: object
+      properties:
+        count:
+          type: integer
+        next:
+          type: string
+          nullable: true
+        previous:
+          type: string
+          nullable: true
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/GymBillingSubscription'
+      required:
+      - count
+      - results
+    PatchedBillingPlanWrite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        tier:
+          $ref: '#/components/schemas/PlanTierEnum'
+        description:
+          type: string
+        is_active:
+          type: boolean
+        is_public:
+          type: boolean
     PatchedBranch:
       type: object
       properties:
@@ -2208,6 +3515,23 @@ components:
           type: string
           format: date-time
           readOnly: true
+    PaymentCreate:
+      type: object
+      properties:
+        invoice_id:
+          type: integer
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        method:
+          allOf:
+          - $ref: '#/components/schemas/BillingPaymentMethodEnum'
+          default: transfer
+        reference:
+          type: string
+      required:
+      - invoice_id
     PhoneToken:
       type: object
       properties:
@@ -2229,6 +3553,36 @@ components:
         * `small` - Small
         * `medium` - Medium
         * `big` - Big
+    PlatformBillingSummary:
+      type: object
+      properties:
+        active_subscriptions:
+          type: integer
+        subscriptions_by_tier:
+          type: object
+          additionalProperties:
+            type: integer
+        monthly_recurring_revenue:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        outstanding_balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        overdue_invoice_count:
+          type: integer
+        collected_this_month:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+      required:
+      - active_subscriptions
+      - collected_this_month
+      - monthly_recurring_revenue
+      - outstanding_balance
+      - overdue_invoice_count
+      - subscriptions_by_tier
     PlatformGymDetail:
       type: object
       properties:
@@ -2351,6 +3705,14 @@ components:
       - id
       - name
       - phone
+    ProviderEnum:
+      enum:
+      - paystack
+      - manual
+      type: string
+      description: |-
+        * `paystack` - Paystack
+        * `manual` - Manual
     RedeemInvite:
       type: object
       properties:
@@ -2437,6 +3799,67 @@ components:
             $ref: '#/components/schemas/CodesEnum'
       required:
       - codes
+    SubscriptionChangePlan:
+      type: object
+      properties:
+        plan_id:
+          type: integer
+        interval:
+          $ref: '#/components/schemas/IntervalEnum'
+    SubscriptionCreate:
+      type: object
+      properties:
+        gym_id:
+          type: integer
+        plan_id:
+          type: integer
+        interval:
+          $ref: '#/components/schemas/IntervalEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BillingSubscriptionStatusEnum'
+          default: active
+        start:
+          type: string
+          format: date
+      required:
+      - gym_id
+      - interval
+      - plan_id
+    SubscriptionPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        tier:
+          type: string
+      required:
+      - id
+      - name
+      - tier
+    SubscriptionPrice:
+      type: object
+      properties:
+        id:
+          type: integer
+        interval:
+          type: string
+        duration_months:
+          type: integer
+        currency:
+          type: string
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+      required:
+      - amount
+      - currency
+      - duration_months
+      - id
+      - interval
     TokenPair:
       type: object
       properties:
@@ -2528,6 +3951,19 @@ components:
       - permission_codes
       - phone
       - whatsapp_opt_in
+    UserRef:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+      required:
+      - id
+      - name
+      - phone
     UserRoleEnum:
       enum:
       - super_admin
@@ -2557,6 +3993,14 @@ components:
       required:
       - id
       - phone
+    Void:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+      required:
+      - reason
     VoidPayment:
       type: object
       properties:

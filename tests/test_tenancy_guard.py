@@ -5,6 +5,15 @@ from rest_framework.viewsets import ViewSetMixin
 
 from accounts.tenant import GymScopedQuerysetMixin
 from accounts.views import UserListViewSet
+from billing.models import (
+    BillingPayment,
+    BillingPlan,
+    BillingPlanPrice,
+    DunningAttempt,
+    GymBillingSubscription,
+    Invoice,
+    WebhookEvent,
+)
 from gyms.models import Branch
 from gyms.views import BranchViewSet
 from memberships.views import (
@@ -34,6 +43,21 @@ def model_is_tenant_owned(model):
     return "gym" in {field.name for field in model._meta.get_fields()}
 
 
+# Platform-owned billing rows reference a gym, but they belong to the platform.
+# They are reachable only through /api/platform/ (super admin) and the owner's
+# own gym-scoped /api/billing/ endpoints. They must never be tenant-scoped by
+# GymScopedQuerysetMixin, so the guard treats them as an explicit exemption.
+PLATFORM_OWNED_MODELS = {
+    BillingPlan,
+    BillingPlanPrice,
+    GymBillingSubscription,
+    Invoice,
+    BillingPayment,
+    WebhookEvent,
+    DunningAttempt,
+}
+
+
 def scopes_by_gym(viewset):
     """A tenant ViewSet is safe only if it scopes through the mixin or get_queryset."""
     if GymScopedQuerysetMixin in viewset.__mro__:
@@ -48,6 +72,8 @@ def tenant_viewsets():
     for viewset in registered_viewsets():
         queryset = getattr(viewset, "queryset", None)
         if queryset is None:
+            continue
+        if queryset.model in PLATFORM_OWNED_MODELS:
             continue
         if model_is_tenant_owned(queryset.model):
             yield viewset
@@ -88,3 +114,27 @@ def test_tenancy_guard_rejects_a_viewset_that_does_not_scope():
 
 def test_notification_viewset_is_gym_scoped():
     assert scopes_by_gym(NotificationViewSet) is True
+
+
+def test_billing_models_are_an_intentional_platform_exemption():
+    """Billing rows have a gym FK but are platform-owned, not tenant-owned."""
+    gym_bearing = {
+        GymBillingSubscription,
+        Invoice,
+        BillingPayment,
+    }
+    assert gym_bearing <= PLATFORM_OWNED_MODELS
+    # The guard would otherwise treat these as tenant models.
+    assert all(model_is_tenant_owned(model) for model in gym_bearing)
+    guarded = {viewset.queryset.model for viewset in tenant_viewsets()}
+    assert guarded.isdisjoint(PLATFORM_OWNED_MODELS)
+    # Every billing model, gym-bearing or not, is part of the exemption.
+    assert {
+        BillingPlan,
+        BillingPlanPrice,
+        GymBillingSubscription,
+        Invoice,
+        BillingPayment,
+        WebhookEvent,
+        DunningAttempt,
+    } == PLATFORM_OWNED_MODELS

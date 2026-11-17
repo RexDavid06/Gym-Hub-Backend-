@@ -40,6 +40,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/health/", HealthView.as_view(), name="health"),
     path("api/platform/", include("platform_admin.urls")),
+    path("api/platform/billing/", include("billing.urls")),
+    path("api/billing/", include("billing.urls_owner")),
     path("api/token/", PhoneTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", PhoneTokenRefreshView.as_view(), name="token_refresh"),
     path("api/auth/register-gym/", RegisterGymView.as_view(), name="register_gym"),
