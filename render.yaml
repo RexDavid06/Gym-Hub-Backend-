@@ -87,7 +87,7 @@ services:
     region: frankfurt
     plan: 0.5c-512mb
     buildCommand: pip install -r requirements/prod.txt
-    startCommand: celery -A config worker -Q default,notifications -l info --concurrency=2
+    startCommand: celery -A config worker -Q default,notifications,billing -l info --concurrency=2
     maxShutdownDelaySeconds: 60
     envVars:
       - fromGroup: gym-hub-shared

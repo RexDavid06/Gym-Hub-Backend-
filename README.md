@@ -35,7 +35,7 @@ against the proxy's address.
 Phase 8 adds tenant-scoped SMS and WhatsApp reminders and payment receipts.
 
 ```sh
-celery -A config worker -Q default,notifications -l info
+celery -A config worker -Q default,notifications,billing -l info
 celery -A config beat -l info
 ```
 
@@ -50,6 +50,18 @@ Provider settings:
 Delivery semantics: notification rows move `pending → sending → sent | failed | skipped`. Transient provider failures retry up to three attempts; permanent failures are not retried automatically. `sent` means the provider accepted the message, not that the handset received it. Owners can retry failed rows from the API or web. WhatsApp is sent only to opted-in members. Suspended/inactive gyms do not send, and skipped messages are not backfilled after reactivation. Logs mask phone numbers, and provider credentials and raw responses are never returned by the API.
 
 `tests/test_phase8_redis_smoke.py` is skipped by default. CI runs it with a live Redis service and a Celery worker by setting `RUN_REDIS_SMOKE=1`.
+
+## Platform billing
+
+Phase 10 adds the `billing` app under `/api/platform/billing/` (super-admin only) and `/api/billing/` (owner, gym-scoped). Billing rows are platform-owned, not tenant-owned: they have an explicit exemption in `tests/test_tenancy_guard.py` and must never be exposed through tenant endpoints. `tests/test_phase10_billing.py` covers pricing intervals, period advancement, numbering, void-only rules, webhooks, idempotency, cross-gym isolation, dunning, and auto-suspension.
+
+Models: `BillingPlan`, versioned `BillingPlanPrice` (monthly/quarterly/semiannual/annual), `GymBillingSubscription`, `Invoice`, `BillingPayment`, `WebhookEvent`, and `DunningAttempt`. Invoices and payments snapshot the plan and amount, and neither is editable or deletable; both are voided with a reason and actor. Invoice numbers come from a row-locked `BillingSequence`.
+
+Settings (see `.env.example`): `BILLING_CURRENCY`, `BILLING_PROVIDER`, `BILLING_DUE_DAYS`, `BILLING_DUNNING_ENABLED`, `BILLING_DUNNING_OFFSETS`, `BILLING_AUTO_SUSPEND_ENABLED`, `BILLING_GRACE_PERIOD_DAYS`, `BILLING_HTTP_TIMEOUT`, `BILLING_RUN_BATCH_SIZE`, `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`, and `PAYSTACK_EMAIL_DOMAIN`. Dunning and auto-suspension both default to off.
+
+The default `BILLING_PROVIDER=manual` is fully functional: owners see invoices but cannot start online checkout, and staff record offline payments. Set `BILLING_PROVIDER=paystack` with both keys to enable owner checkout at `POST /api/billing/invoices/{id}/checkout/`. Production fails at startup if the provider is `paystack` and either key is missing. Register `https://<api-host>/api/platform/billing/webhooks/paystack/` with Paystack; the endpoint is unauthenticated by design but rejects missing or invalid `x-paystack-signature` HMACs. The webhook records a payment once per `WebhookEvent.event_id`, using the amount and plan from the invoice (never client input). A periodic reconciliation task re-verifies checkouts whose webhook never arrived.
+
+Celery Beat runs `billing.tasks.generate_billing_invoices`, `billing.tasks.run_billing_dunning`, and `billing.tasks.reconcile_paystack_payments` on the `billing` queue; the worker command above consumes it. Billing runs are batched (`BILLING_RUN_BATCH_SIZE`, default 200) and idempotent per (subscription, period).
 
 ## Shared API client and web dashboard
 
@@ -88,9 +100,11 @@ Set `VITE_API_BASE_URL` to call a different origin.
 Sign in with a phone number and password, the same credentials as the API.
 Owners and admins get members, memberships and payments; an admin only sees
 the sections their staff permissions allow. A `super_admin` lands on the
-platform screens for gym summary, listing, and suspend/reactivate. The API
-enforces the same rules, so hiding a section is a convenience, never the
-security boundary.
+platform screens for gym summary, listing, suspend/reactivate, and billing
+(plans, subscriptions, invoices, payments, dunning). Owners get a read-only
+`/billing` page with their plan, invoices, balance, and a Pay now button when
+Paystack is configured. The API enforces the same rules, so hiding a section is
+a convenience, never the security boundary.
 
 Run the web checks with `npm run lint`, `npm run typecheck`,
 `npm run test:run`, and `npm run build`.
@@ -124,6 +138,10 @@ After the first deploy:
    `python manage.py createsuperuser`.
 4. Enable SMS or WhatsApp by overriding `SMS_PROVIDER` / `WHATSAPP_PROVIDER`
    and setting the provider credentials from the dashboard.
+5. Billing starts in `manual` mode, which needs no keys. To enable Paystack,
+   set `BILLING_PROVIDER=paystack` and add `PAYSTACK_SECRET_KEY` and
+   `PAYSTACK_PUBLIC_KEY` to the shared environment group, then register the
+   webhook URL in the Paystack dashboard.
 
 If the API client schema changes, update `API_CLIENT_REF` on the static site to
 the backend branch or tag that contains the matching `api-client` package.
